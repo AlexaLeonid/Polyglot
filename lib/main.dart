@@ -1,125 +1,289 @@
 import 'package:flutter/material.dart';
 
+import 'data/db/database.dart';
+
 void main() {
-  runApp(const MyApp());
+  runApp( MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      debugShowCheckedModeBanner: false,
+      home: HomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class HomePage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
 
-  void _incrementCounter() {
+
+class _HomePageState extends State<HomePage> {
+  late Future<List<Map<String, dynamic>>> _dictionariesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDictionaries();
+  }
+  void _loadDictionaries() {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _dictionariesFuture = DatabaseHelper.instance.database.then((db) {
+        return db.query('dictionaries');
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
+      backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        backgroundColor: Color(0xFF438589), // Бирюзовый цвет
+        title: SizedBox.shrink(), // Убираем текст в AppBar
+        leading: Icon(
+          Icons.person_outline, // Иконка пользователя
+          color: Colors.white,
+        ),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      body: Column(
+        children: [
+        Expanded(
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+        future: _dictionariesFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text("Ошибка: ${snapshot.error}"));
+          } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+            return Center(
+              child: Text(
+                "Добавьте первый словарь!",
+                style: TextStyle(fontSize: 18, color: Colors.grey),
+              ),
+            );
+          } else {
+            final dictionaries = snapshot.data!;
+            return ListView.builder(
+              padding: EdgeInsets.all(16.0),
+              itemCount: dictionaries.length,
+              itemBuilder: (context, index) {
+                final dictionary = dictionaries[index];
+                return Card(
+                  margin: EdgeInsets.only(bottom: 16.0),
+                  child: ListTile(
+                    title: Text(dictionary['name'] ?? 'Без названия'),
+                    subtitle: Text(dictionary['description'] ?? 'Нет описания'),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'delete') {
+                          _deleteDictionary(dictionary['id']);
+                        }
+                        // Можно добавить дополнительные действия, например, редактирование
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Удалить'),
+                        ),
+                      ],
+                    ),
+                    onTap: () {
+                      // Здесь можно открыть подробности словаря
+                      print('Открыть словарь: ${dictionary['name']}');
+                    },
+                  ),
+                );
+              },
+            );
+          }
+        },
+        ),
+        ),
+        ]
+    ),
+      bottomNavigationBar: BottomAppBar(
+        color: Color(0xFF438589), // Бирюзовый цвет
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: Icon(Icons.extension, color: Colors.white),
+              onPressed: () {},
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            IconButton(
+              icon: Icon(Icons.list, color: Colors.white),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: Icon(Icons.download, color: Colors.white),
+              onPressed: () {},
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddDictionaryPage()),
+          );
+          _loadDictionaries(); // Перезагружаем список после добавления
+        },
+        backgroundColor: Color(0xFF438589),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    );
+
+  }
+  Future<void> _deleteDictionary(int dictionaryId) async {
+    final dbHelper = await DatabaseHelper.instance;
+    await dbHelper.deleteDictionary(dictionaryId);
+    _loadDictionaries(); // Обновляем список после удаления
+  }
+}
+
+class AddDictionaryPage extends StatefulWidget {
+  @override
+  _AddDictionaryPageState createState() => _AddDictionaryPageState();
+}
+
+class _AddDictionaryPageState extends State<AddDictionaryPage> {
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  int languageCount = 3;
+
+  Future<void> _saveDictionary() async {
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Название словаря не может быть пустым')),
+      );
+      return;
+    }
+
+    // Сохраняем словарь в базу данных
+    try {
+      final dbHelper = DatabaseHelper.instance;
+      await dbHelper.insertDictionary(
+        name,
+        description,
+        null, // Временно передаём null для `word_of_chain_id`
+        languageCount,
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Словарь успешно добавлен')),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при сохранении словаря: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color(0xFF438589),
+        title: Text("Добавление словаря"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Название словаря',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Описание',
+                hintText: '(Необязательно)',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Количество языков',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.remove),
+                      onPressed: () {
+                        setState(() {
+                          if (languageCount > 1) languageCount--;
+                        });
+                      },
+                    ),
+                    Text(
+                      '$languageCount',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.add),
+                      onPressed: () {
+                        setState(() {
+                          languageCount++;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    side: BorderSide(color: Colors.grey),
+                  ),
+                  child: Text(
+                    'Отмена',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _saveDictionary,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF438589),
+                  ),
+                  child: Text('Создать'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -33,6 +33,7 @@ class DatabaseHelper {
     CREATE TABLE dictionaries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      description TEXT,
       count_of_languages INTEGER NOT NULL,
       word_of_chain_id INTEGER,
       FOREIGN KEY (word_of_chain_id) REFERENCES chain_of_words (id)
@@ -63,14 +64,20 @@ class DatabaseHelper {
     await db.insert('languages', {'name': name});
   }
 
-  Future<void> insertDictionary(String name, int? chainId, int? countOfLanguages) async {
+  Future<void> insertDictionary(String name, String description, int? chainId, int? countOfLanguages) async {
     final db = await instance.database;
 
     await db.insert('dictionaries', {
       'name': name,
+      'description': description,
       'word_of_chain_id': chainId,
       'count_of_languages': countOfLanguages,
     });
+  }
+
+  Future<void> deleteDictionary(int dictionaryId) async {
+    final db = await DatabaseHelper.instance.database;
+    await db.delete('dictionaries', where: 'id = ?', whereArgs: [dictionaryId]);
   }
 
   Future<void> insertWord(String name, int languageId) async {

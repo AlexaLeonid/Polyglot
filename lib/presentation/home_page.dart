@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import '../data/db/database.dart';
+import 'glossary_addition_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late Future<List<Map<String, dynamic>>> _dictionariesFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDictionaries();
+  }
+  void _loadDictionaries() {
+    setState(() {
+      _dictionariesFuture = DatabaseHelper.instance.database.then((db) {
+        return db.query('dictionaries');
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
+      appBar: AppBar(
+        backgroundColor: Color(0xFF438589), // Бирюзовый цвет
+        title: SizedBox.shrink(), // Убираем текст в AppBar
+        leading: Icon(
+          Icons.person_outline, // Иконка пользователя
+          color: Colors.white,
+        ),
+      ),
+      body: Column(
+        children: [
+        Expanded(
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+
+            future: _dictionariesFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Ошибка: ${snapshot.error}"));
+              } else if (snapshot.data == null || snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    "Добавьте первый словарь!",
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                  ),
+                );
+              } else {
+                final dictionaries = snapshot.data!;
+                return ListView.builder(
+                  padding: EdgeInsets.all(16.0),
+                  itemCount: dictionaries.length,
+                  itemBuilder: (context, index) {
+                    final dictionary = dictionaries[index];
+                    return Card(
+                      margin: EdgeInsets.only(bottom: 16.0),
+                      child: ListTile(
+                        title: Text(dictionary['name'] ?? 'Без названия'),
+                        subtitle: Text(dictionary['description'] ?? 'Нет описания'),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'delete') {
+                              _deleteDictionary(dictionary['id']);
+                            }
+                            // Можно добавить дополнительные действия, например, редактирование
+                          },
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Text('Удалить'),
+                            ),
+                          ],
+                        ),
+                        onTap: () {
+                          // Здесь можно открыть подробности словаря
+                          print('Открыть словарь: ${dictionary['name']}');
+                        },
+                      ),
+                    );
+                  },
+                );
+              }
+            },
+          ),
+        ),
+        ]
+    ),
+
+      bottomNavigationBar: BottomAppBar(
+        color: Color(0xFF438589), // Бирюзовый цвет
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: Icon(Icons.extension, color: Colors.white),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: Icon(Icons.list, color: Colors.white),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: Icon(Icons.download, color: Colors.white),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddDictionaryPage()),
+          );
+          _loadDictionaries(); // Перезагружаем список после добавления
+        },
+        backgroundColor: Color(0xFF438589),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+    );
+
+  }
+  Future<void> _deleteDictionary(int dictionaryId) async {
+    final dbHelper = await DatabaseHelper.instance;
+    await dbHelper.deleteDictionary(dictionaryId);
+    _loadDictionaries(); // Обновляем список после удаления
+  }
+}

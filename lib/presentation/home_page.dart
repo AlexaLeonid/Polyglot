@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
+import 'dictionary_page.dart';
 import 'glossary_addition_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -18,9 +19,7 @@ class _HomePageState extends State<HomePage> {
   }
   void _loadDictionaries() {
     setState(() {
-      _dictionariesFuture = DatabaseHelper.instance.database.then((db) {
-        return db.query('dictionaries');
-      });
+      _dictionariesFuture = DatabaseHelper.instance.fetchDictionariesWithLanguages();
     });
   }
 
@@ -65,13 +64,22 @@ class _HomePageState extends State<HomePage> {
                       margin: EdgeInsets.only(bottom: 16.0),
                       child: ListTile(
                         title: Text(dictionary['name'] ?? 'Без названия'),
-                        subtitle: Text(dictionary['description'] ?? 'Нет описания'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(dictionary['description'] ?? 'Нет описания'),
+                            if (dictionary['language_codes'] != null)
+                              Text(
+                                dictionary['language_codes'], // Цепочка кодов языков
+                                style: TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                          ],
+                        ),
                         trailing: PopupMenuButton<String>(
                           onSelected: (value) {
                             if (value == 'delete') {
                               _deleteDictionary(dictionary['id']);
                             }
-                            // Можно добавить дополнительные действия, например, редактирование
                           },
                           itemBuilder: (context) => [
                             PopupMenuItem(
@@ -81,9 +89,13 @@ class _HomePageState extends State<HomePage> {
                           ],
                         ),
                         onTap: () {
-                          // Здесь можно открыть подробности словаря
-                          print('Открыть словарь: ${dictionary['name']}');
-                        },
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DictionaryPage(dictionaryId: dictionary['id']),
+                            ),
+                          );
+                        }, //родип окнесоК
                       ),
                     );
                   },

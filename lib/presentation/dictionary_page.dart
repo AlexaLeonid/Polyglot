@@ -100,6 +100,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Color(0xFFFDFBE8),
           title: const Text('Добавить слово'),
           content: SingleChildScrollView(
             child: Column(
@@ -187,6 +188,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8),
       appBar: AppBar(
+        backgroundColor: Color(0xFF438589),
         title: const Text('Словарь'),
       ),
       body: Column(

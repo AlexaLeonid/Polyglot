@@ -61,6 +61,7 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     final dictionary = dictionaries[index];
                     return Card(
+                      color: Color(0xFFFDFBE8),
                       margin: EdgeInsets.only(bottom: 16.0),
                       child: ListTile(
                         title: Text(dictionary['name'] ?? 'Без названия'),

@@ -100,24 +100,28 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
             ),
             SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: _languages.length,
-                itemBuilder: (context, index) {
-                  final language = _languages[index];
-                  return CheckboxListTile(
-                    title: Text(language['name']),
-                    value: _selectedLanguages.contains(language['id']),
-                    onChanged: (bool? selected) {
-                      setState(() {
-                        if (selected == true) {
-                          _selectedLanguages.add(language['id']);
-                        } else {
-                          _selectedLanguages.remove(language['id']);
-                        }
-                      });
-                    },
-                  );
-                },
+              flex: 3,
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: ListView.builder(
+                  itemCount: _languages.length,
+                  itemBuilder: (context, index) {
+                    final language = _languages[index];
+                    return CheckboxListTile(
+                      title: Text(language['name']),
+                      value: _selectedLanguages.contains(language['id']),
+                      onChanged: (bool? selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedLanguages.add(language['id']);
+                          } else {
+                            _selectedLanguages.remove(language['id']);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
               ),
             ),
             Spacer(),
@@ -129,20 +133,25 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: BorderSide(color: Colors.grey),
+                    backgroundColor: Color(0xFF438589),
                   ),
-                  child: Text(
-                    'Отмена',
-                    style: TextStyle(color: Colors.black),
+                  child: Icon(
+                    Icons.close,
+                    color: Color(0xFFFDFBE8),
+                    size: 20,
                   ),
                 ),
+
                 ElevatedButton(
                   onPressed: _saveDictionary,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF438589),
                   ),
-                  child: Text('Создать'),
+                  child: Icon(
+                    Icons.done,
+                    color: Color(0xFFFDFBE8),
+                    size: 20,
+                  ),
                 ),
               ],
             ),

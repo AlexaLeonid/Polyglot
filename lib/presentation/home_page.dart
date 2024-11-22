@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
         title: SizedBox.shrink(), // Убираем текст в AppBar
         leading: Icon(
           Icons.person_outline, // Иконка пользователя
-          color: Colors.white,
+          color: Color(0xFFFDFBE8),
         ),
       ),
       body: Column(
@@ -114,15 +114,15 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: Icon(Icons.extension, color: Colors.white),
+              icon: Icon(Icons.extension, color: Color(0xFFFDFBE8)),
               onPressed: () {},
             ),
             IconButton(
-              icon: Icon(Icons.list, color: Colors.white),
+              icon: Icon(Icons.list, color: Color(0xFFFDFBE8)),
               onPressed: () {},
             ),
             IconButton(
-              icon: Icon(Icons.download, color: Colors.white),
+              icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),
               onPressed: () {},
             ),
           ],

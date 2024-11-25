@@ -192,6 +192,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8),
       appBar: AppBar(
+        backgroundColor: Color(0xFF438589),
         title: const Text('Словарь'),
       ),
       body: Column(

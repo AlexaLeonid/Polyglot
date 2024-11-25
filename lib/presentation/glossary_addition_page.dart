@@ -18,6 +18,76 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
     _loadLanguages();
   }
 
+  void _showAddLanguageDialog() {
+    final _languageNameController = TextEditingController();
+    final _languageCodeController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Добавить язык'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _languageNameController,
+                decoration: InputDecoration(
+                  labelText: 'Название языка',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 8),
+              TextField(
+                controller: _languageCodeController,
+                decoration: InputDecoration(
+                  labelText: 'Код языка',
+                  hintText: 'Пример: en, ru, es',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text('Отмена'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = _languageNameController.text.trim();
+                final code = _languageCodeController.text.trim();
+
+                if (name.isNotEmpty && code.isNotEmpty) {
+                  try {
+                    final dbHelper = DatabaseHelper.instance;
+                    await dbHelper.insertLanguage(name, code);
+                    await _loadLanguages(); // Обновляем список языков
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Язык добавлен')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Ошибка: $e')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Все поля обязательны для заполнения')),
+                  );
+                }
+              },
+              child: Text('Добавить'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _loadLanguages() async {
     final dbHelper = DatabaseHelper.instance;
     final languages = await dbHelper.fetchLanguages();
@@ -64,9 +134,10 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
+      backgroundColor: Color(0xFFFDFBE8),
       appBar: AppBar(
         backgroundColor: Color(0xFF438589),
         title: Text("Добавление словаря"),
@@ -94,30 +165,43 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
               maxLines: 3,
             ),
             SizedBox(height: 16),
-            Text(
-              'Выберите языки:',
-              style: TextStyle(fontSize: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Выберите языки:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add, color: Color(0xFF438589)),
+                  onPressed: _showAddLanguageDialog, // Функция для добавления языка
+                ),
+              ],
             ),
             SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                itemCount: _languages.length,
-                itemBuilder: (context, index) {
-                  final language = _languages[index];
-                  return CheckboxListTile(
-                    title: Text(language['name']),
-                    value: _selectedLanguages.contains(language['id']),
-                    onChanged: (bool? selected) {
-                      setState(() {
-                        if (selected == true) {
-                          _selectedLanguages.add(language['id']);
-                        } else {
-                          _selectedLanguages.remove(language['id']);
-                        }
-                      });
-                    },
-                  );
-                },
+              flex: 3,
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: ListView.builder(
+                  itemCount: _languages.length,
+                  itemBuilder: (context, index) {
+                    final language = _languages[index];
+                    return CheckboxListTile(
+                      title: Text(language['name']),
+                      value: _selectedLanguages.contains(language['id']),
+                      onChanged: (bool? selected) {
+                        setState(() {
+                          if (selected == true) {
+                            _selectedLanguages.add(language['id']);
+                          } else {
+                            _selectedLanguages.remove(language['id']);
+                          }
+                        });
+                      },
+                    );
+                  },
+                ),
               ),
             ),
             Spacer(),
@@ -129,12 +213,12 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                     Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    side: BorderSide(color: Colors.grey),
+                    backgroundColor: Color(0xFF438589),
                   ),
-                  child: Text(
-                    'Отмена',
-                    style: TextStyle(color: Colors.black),
+                  child: Icon(
+                    Icons.close,
+                    color: Color(0xFFFDFBE8),
+                    size: 20,
                   ),
                 ),
                 ElevatedButton(
@@ -142,7 +226,11 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFF438589),
                   ),
-                  child: Text('Создать'),
+                  child: Icon(
+                    Icons.done,
+                    color: Color(0xFFFDFBE8),
+                    size: 20,
+                  ),
                 ),
               ],
             ),

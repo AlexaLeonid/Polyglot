@@ -97,24 +97,28 @@ class _DictionaryPageState extends State<DictionaryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Color(0xFFFDFBE8),
           title: const Text('Добавить слово'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Поля для перевода на языки из словаря
-                ...translationControllers.entries.map((entry) {
-                  final languageId = entry.key; // ID языка
-                  final languageName = languageRows
-                      .firstWhere((row) => row['id'] == languageId)['name'] as String;
+          content: Scrollbar(
+            thumbVisibility: true, // Для видимости скроллбара
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Поля для перевода на языки из словаря
+                  ...translationControllers.entries.map((entry) {
+                    final languageId = entry.key; // ID языка
+                    final languageName = languageRows
+                        .firstWhere((row) => row['id'] == languageId)['name'] as String;
 
-                  return TextField(
-                    controller: entry.value,
-                    decoration: InputDecoration(
-                      labelText: 'Перевод на $languageName',
-                    ),
-                  );
-                }).toList(),
-              ],
+                    return TextField(
+                      controller: entry.value,
+                      decoration: InputDecoration(
+                        labelText: 'Перевод на $languageName',
+                      ),
+                    );
+                  }).toList(),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -122,7 +126,11 @@ class _DictionaryPageState extends State<DictionaryPage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Закрыть форму без сохранения
               },
-              child: const Text('Отмена'),
+              child: Icon(
+                Icons.close,
+                color: Color(0xFF438589),
+                size: 30,
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -143,7 +151,11 @@ class _DictionaryPageState extends State<DictionaryPage> {
                   );
                 }
               },
-              child: const Text('Сохранить'),
+              child: Icon(
+                Icons.done,
+                color: Color(0xFF438589),
+                size: 30,
+              ),
             ),
           ],
         );

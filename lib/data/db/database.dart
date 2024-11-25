@@ -47,10 +47,7 @@ class DatabaseHelper {
     await db.execute('''
   CREATE TABLE words (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    original_word TEXT NOT NULL,
-    language_id INTEGER NOT NULL,
     dictionary_id INTEGER NOT NULL,
-    FOREIGN KEY (language_id) REFERENCES languages (id),
     FOREIGN KEY (dictionary_id) REFERENCES dictionaries (id)
   );
   ''');
@@ -122,11 +119,9 @@ class DatabaseHelper {
     });
   }
 
-  Future<int> insertWord(String originalWord, int languageId, int dictionaryId) async {
+  Future<int> insertWord(int dictionaryId) async {
     final db = await database;
     return await db.insert('words', {
-      'original_word': originalWord,
-      'language_id': languageId,
       'dictionary_id': dictionaryId,
     });
   }
@@ -168,13 +163,11 @@ class DatabaseHelper {
 
   Future<List<Map<String, dynamic>>> fetchWordsInDictionary(int dictionaryId) async {
     final db = await database;
-
-    return await db.rawQuery('''
-    SELECT w.original_word, l.name AS language_name
-    FROM words w
-    INNER JOIN languages l ON w.language_id = l.id
-    WHERE w.dictionary_id = ?
-    ''', [dictionaryId]);
+    return await db.query(
+      'words',
+      where: 'dictionary_id = ?',
+      whereArgs: [dictionaryId],
+    );
   }
 
   Future<List<Map<String, dynamic>>> fetchTranslations(int wordId) async {

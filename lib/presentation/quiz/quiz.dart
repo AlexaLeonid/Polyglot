@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/db/database.dart';
-import 'home_page.dart';
+import '../../data/db/database.dart';
+import '../bottom_menu.dart';
 import 'quiz_play_page.dart';
 
 class QuizPage extends StatefulWidget {
@@ -145,38 +145,7 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: Color(0xFF438589), // Бирюзовый цвет
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.extension, color: Color(0xFFFDFBE8)),
-              onPressed: () {
-                // Переход на страницу quiz.dart
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => QuizPage()),
-                ); // Замените Quiz() на ваш виджет
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.list, color: Color(0xFFFDFBE8)),
-              onPressed: () {
-                // Переход на страницу quiz.dart
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: CustomBottomAppBar(context: context),
     );
   }
 }

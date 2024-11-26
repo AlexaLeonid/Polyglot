@@ -190,9 +190,9 @@ class _DictionaryPageState extends State<DictionaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFFDFBE8),
+      backgroundColor: const Color(0xFFFDFBE8),
       appBar: AppBar(
-        backgroundColor: Color(0xFF438589),
+        backgroundColor: const Color(0xFF438589),
         title: const Text('Словарь'),
       ),
       body: Column(
@@ -215,25 +215,31 @@ class _DictionaryPageState extends State<DictionaryPage> {
           ),
           // Таблица
           Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
+            child: Scrollbar(
+              thumbVisibility: true, // Показывает скроллбар при прокрутке
               child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: languages.isEmpty
-                    ? const Center(child: CircularProgressIndicator())
-                    : DataTable(
-                  columns: languages
-                      .map((lang) => DataColumn(label: Text(lang)))
-                      .toList(),
-                  rows: words
-                      .map(
-                        (wordRow) => DataRow(
-                      cells: wordRow
-                          .map((word) => DataCell(Text(word)))
+                scrollDirection: Axis.horizontal,
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: languages.isEmpty
+                        ? const Center(child: CircularProgressIndicator())
+                        : DataTable(
+                      columns: languages
+                          .map((lang) => DataColumn(label: Text(lang)))
+                          .toList(),
+                      rows: words
+                          .map(
+                            (wordRow) => DataRow(
+                          cells: wordRow
+                              .map((word) => DataCell(Text(word)))
+                              .toList(),
+                        ),
+                      )
                           .toList(),
                     ),
-                  )
-                      .toList(),
+                  ),
                 ),
               ),
             ),
@@ -242,16 +248,17 @@ class _DictionaryPageState extends State<DictionaryPage> {
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: FloatingActionButton(
-              backgroundColor: Color(0xFF438589),
+              backgroundColor: const Color(0xFF438589),
               onPressed: () async {
                 await _showAddWordForm();
                 await _loadData(); // Перезагружаем данные
               },
-              child: Icon(Icons.add, color: Colors.white),
+              child: const Icon(Icons.add, color: Colors.white),
             ),
           ),
         ],
       ),
     );
+
   }
 }

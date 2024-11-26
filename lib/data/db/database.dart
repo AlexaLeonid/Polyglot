@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -232,4 +230,75 @@ class DatabaseHelper {
       whereArgs: [wordId],
     );
   }
+
+  Future<Map<int, Map<String, Map<String, List<String>>>>> fetchDictionaryOfDictionariesWithLanguages(
+      List<int> dictionaryIds) async {
+    final db = await database;
+
+    // Проверяем, есть ли переданные ID
+    if (dictionaryIds.isEmpty) {
+      return {}; // Возвращаем пустой словарь, если список ID пуст
+    }
+
+    // Формируем строку для SQL-запроса с помощью плейсхолдеров
+    final placeholders = List.filled(dictionaryIds.length, '?').join(', ');
+    final dictionaries = await db.rawQuery('''
+    SELECT * 
+    FROM dictionaries 
+    WHERE id IN ($placeholders)
+  ''', dictionaryIds);
+
+    // Инициализируем результирующую структуру
+    Map<int, Map<String, Map<String, List<String>>>> dictionaryWithLanguages = {};
+
+    for (var dictionary in dictionaries) {
+      int dictionaryId = int.parse(dictionary['id'].toString());
+
+      // Получаем все слова для текущего словаря
+      final words = await db.query(
+        'words',
+        where: 'dictionary_id = ?',
+        whereArgs: [dictionaryId],
+      );
+
+      // Инициализируем Map для слов текущего словаря
+      Map<String, Map<String, List<String>>> wordsMap = {};
+
+      for (var word in words) {
+        int wordId = int.parse(word['id'].toString());
+
+        // Получаем переводы для текущего слова с языком
+        final translations = await db.rawQuery('''
+        SELECT t.translated_word, l.name AS language_name 
+        FROM translations t
+        INNER JOIN languages l ON t.language_id = l.id
+        WHERE t.word_id = ?
+      ''', [wordId]);
+
+        // Группируем переводы по языкам
+        Map<String, List<String>> translationsByLanguage = {};
+
+        for (var translation in translations) {
+          String languageName = translation['language_name'] as String;
+          String translatedWord = translation['translated_word'] as String;
+
+          if (!translationsByLanguage.containsKey(languageName)) {
+            translationsByLanguage[languageName] = [];
+          }
+          translationsByLanguage[languageName]!.add(translatedWord);
+        }
+
+        // Добавляем слово и его переводы (группированные по языкам) в Map текущего словаря
+        wordsMap[word['id'].toString()] = translationsByLanguage;
+      }
+
+      // Добавляем текущий словарь в итоговую структуру
+      dictionaryWithLanguages[dictionaryId] = wordsMap;
+    }
+
+    return dictionaryWithLanguages;
+  }
+
 }
+
+

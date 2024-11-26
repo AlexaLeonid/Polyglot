@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../data/db/database.dart';
 import 'dictionary_page.dart';
 import 'glossary_addition_page.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'quiz.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -115,11 +115,23 @@ class _HomePageState extends State<HomePage> {
           children: [
             IconButton(
               icon: Icon(Icons.extension, color: Color(0xFFFDFBE8)),
-              onPressed: () {},
+              onPressed: () {
+                // Переход на страницу quiz.dart
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => QuizPage()),
+                ); // Замените Quiz() на ваш виджет
+              },
             ),
             IconButton(
               icon: Icon(Icons.list, color: Color(0xFFFDFBE8)),
-              onPressed: () {},
+              onPressed: () {
+                // Переход на страницу quiz.dart
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HomePage()),
+                );
+              },
             ),
             IconButton(
               icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),

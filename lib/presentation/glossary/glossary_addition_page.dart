@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/db/database.dart';
+import '../../data/db/database.dart';
 
 class AddDictionaryPage extends StatefulWidget {
   @override

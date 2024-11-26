@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
-import 'dictionary_page.dart';
-import 'glossary_addition_page.dart';
-import 'quiz.dart';
+import 'bottom_menu.dart';
+import 'glossary/dictionary_page.dart';
+import 'glossary/glossary_addition_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -33,6 +33,7 @@ class _HomePageState extends State<HomePage> {
         leading: Icon(
           Icons.person_outline, // Иконка пользователя
           color: Color(0xFFFDFBE8),
+          size: 28,
         ),
       ),
       body: Column(
@@ -108,38 +109,7 @@ class _HomePageState extends State<HomePage> {
         ]
     ),
 
-      bottomNavigationBar: BottomAppBar(
-        color: Color(0xFF438589), // Бирюзовый цвет
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: Icon(Icons.extension, color: Color(0xFFFDFBE8)),
-              onPressed: () {
-                // Переход на страницу quiz.dart
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => QuizPage()),
-                ); // Замените Quiz() на ваш виджет
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.list, color: Color(0xFFFDFBE8)),
-              onPressed: () {
-                // Переход на страницу quiz.dart
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => HomePage()),
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+      bottomNavigationBar: CustomBottomAppBar(context: context),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(

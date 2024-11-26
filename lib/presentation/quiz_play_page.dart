@@ -116,7 +116,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       backgroundColor: Color(0xFFFDFBE8), // Мягкий бежевый фон
       appBar: AppBar(
         backgroundColor: Color(0xFF438589), // Цвет заголовка
-        title: Text('Крокодил', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: Text('Тренировка', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: FutureBuilder<Map<int, Map<String, Map<String, List<String>>>>>(

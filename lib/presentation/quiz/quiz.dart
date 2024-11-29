@@ -124,8 +124,6 @@ class _QuizPageState extends State<QuizPage> {
                             ],
                           ),
                           trailing: Checkbox(
-                            activeColor: Color(0xFF438589),
-                            checkColor: Color(0xFFFDFBE8),
                             value: isSelected,
                             onChanged: (bool? value) {
                               setState(() {

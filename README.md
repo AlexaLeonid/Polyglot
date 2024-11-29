@@ -1,4 +1,4 @@
-# flutter_projects
+# Polyglot
 
 Personal glossary
 

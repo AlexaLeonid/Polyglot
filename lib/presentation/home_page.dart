@@ -1,3 +1,4 @@
+import 'side_menu.dart';
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
 import 'bottom_menu.dart';
@@ -30,12 +31,19 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         backgroundColor: Color(0xFF438589), // Бирюзовый цвет
         title: SizedBox.shrink(), // Убираем текст в AppBar
-        leading: Icon(
-          Icons.person_outline, // Иконка пользователя
-          color: Color(0xFFFDFBE8),
-          size: 28,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: Icon(
+            Icons.person_outline, // Иконка пользователя
+            color: Color(0xFFFDFBE8),
+            size: 28,
+          ),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
         ),
+
       ),
+      drawer: MyDrawer(),
       body: Column(
         children: [
         Expanded(

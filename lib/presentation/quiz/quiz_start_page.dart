@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/db/database.dart';
 import '../bottom_menu.dart';
+import '../side_menu.dart';
 import 'quiz_play_page.dart';
 
 class QuizPage extends StatefulWidget {
@@ -35,10 +36,15 @@ class _QuizPageState extends State<QuizPage> {
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.person_outline,
-                color: Color(0xFFFDFBE8), // Бежевый цвет для иконки
-                size: 28,
+              Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(
+                    Icons.person_outline, // Иконка пользователя
+                    color: Color(0xFFFDFBE8),
+                    size: 28,
+                    ),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
               ),
               IconButton(
                 icon: Icon(
@@ -69,6 +75,7 @@ class _QuizPageState extends State<QuizPage> {
           ),
 
         ),
+      drawer: MyDrawer(),
       body: Column(
         children: [
           Container(

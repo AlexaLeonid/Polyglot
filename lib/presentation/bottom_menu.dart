@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'quiz/quiz.dart';
+import 'quiz/quiz_start_page.dart';
 
 class CustomBottomAppBar extends StatelessWidget {
   final BuildContext context;

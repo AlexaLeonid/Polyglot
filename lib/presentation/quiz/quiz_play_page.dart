@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'quiz_result_page.dart';
 import '../../data/db/database.dart';
 
 class QuizPlayPage extends StatefulWidget {
@@ -13,12 +14,14 @@ class QuizPlayPage extends StatefulWidget {
 class _QuizPlayPageState extends State<QuizPlayPage> {
   late Future<Map<int, Map<String, Map<String, List<String>>>>> _futureDictionaries;
   Map<String, TextEditingController> controllers = {}; // Контроллеры для ввода текста
-  int currentWordIndex = 0; // Индекс текущего слова для теста
+  int currentWordCounter = 0; // Индекс текущего слова для теста
   String? currentWordId;
   String? firstTranslation;
   String? firstTranslationLanguage;
   Map<String, List<String>>? remainingTranslationsByLanguage;
   List<String> userAnswers = []; // Список для ответов пользователя
+  int allCorrectCount = 0; // Количество правильных ответов для всех слов
+  int allTotalAnswers = 0; // Общее количество переводов для ввода для всех слов
 
   @override
   void initState() {
@@ -28,8 +31,8 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
 
   // Загружаем следующее слово и его переводы
   void _loadNextWord() {
-    if (currentWordIndex < allWords.length) {
-      final wordEntry = allWords[currentWordIndex];
+    if (currentWordCounter < allWords.length) {
+      final wordEntry = allWords[currentWordCounter];
       currentWordId = wordEntry.keys.first;
       final translationsByLanguage = wordEntry.values.first;
 
@@ -66,12 +69,15 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
     int correctCount = 0; // Количество правильных ответов
     int totalAnswers = 0; // Общее количество переводов для ввода
 
+
     remainingTranslationsByLanguage!.forEach((language, translations) {
       for (var translation in translations) {
         final userAnswer = controllers[translation]?.text.trim() ?? '';
         totalAnswers++;
+        allTotalAnswers++;
         if (userAnswer.toLowerCase() == translation.toLowerCase()) {
           correctCount++;
+          allCorrectCount++;
         }
       }
     });
@@ -97,12 +103,22 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
 
     // Переход к следующему слову
     setState(() {
-      currentWordIndex++;
-      if (currentWordIndex < allWords.length) {
+      currentWordCounter++;
+      if (currentWordCounter < allWords.length) {
         _loadNextWord();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Вы завершили тест. Отличная работа!')),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => QuizResultPage(
+              correctCount: allCorrectCount,
+              totalAnswers: allTotalAnswers,
+              selectedDictionaries: widget.selectedDictionaries,
+            ),
+          ),
         );
       }
     });
@@ -116,7 +132,8 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       backgroundColor: Color(0xFFFDFBE8), // Мягкий бежевый фон
       appBar: AppBar(
         backgroundColor: Color(0xFF438589), // Цвет заголовка
-        title: Text('Тренировка', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+        title: Text('Тренировка',
+            style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: FutureBuilder<Map<int, Map<String, Map<String, List<String>>>>>(
@@ -137,7 +154,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
             }).toList();
 
             // Загружаем первое слово и его переводы
-            if (currentWordIndex == 0) {
+            if (currentWordCounter == 0) {
               _loadNextWord();
             }
 
@@ -147,6 +164,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Text('${currentWordCounter+1}/${allWords.length}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal)),
                   if (firstTranslation != null && firstTranslationLanguage != null)...[
                     Center(
                       child: Column(
@@ -173,7 +191,7 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
                               for (var translation in translations)
                                 Container(
                                   margin: const EdgeInsets.symmetric(vertical: 8),
-                                  padding: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.only(left: 12, right: 12),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(8),

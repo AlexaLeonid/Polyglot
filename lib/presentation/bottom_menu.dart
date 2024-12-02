@@ -4,8 +4,9 @@ import 'quiz/quiz_start_page.dart';
 
 class CustomBottomAppBar extends StatelessWidget {
   final BuildContext context;
+  final Future<void> Function()? importDictionary; // Сделаем параметр необязательным
 
-  const CustomBottomAppBar({required this.context});
+  const CustomBottomAppBar({required this.context, this.importDictionary});
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +36,12 @@ class CustomBottomAppBar extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),
             onPressed: () {
-              // Логика загрузки (оставьте пустым или добавьте вашу функциональность)
+              if (importDictionary != null) {
+                importDictionary!(); // Вызываем переданную функцию, если она есть
+              } else {
+                // Логика по умолчанию, если функции нет
+                print('Импорт не доступен');
+              }
             },
           ),
         ],

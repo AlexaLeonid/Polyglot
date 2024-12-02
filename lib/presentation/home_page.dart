@@ -1,16 +1,14 @@
 import 'side_menu.dart';
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
-import 'dictionary_page.dart';
-import 'glossary_addition_page.dart';
+import 'glossary/dictionary_page.dart';
+import 'glossary/glossary_addition_page.dart';
 import 'dart:convert'; // Для работы с JSON
 import 'dart:io'; // Для работы с файлами
 import 'package:path_provider/path_provider.dart'; // Для получения директории
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'bottom_menu.dart';
-import 'glossary/dictionary_page.dart';
-import 'glossary/glossary_addition_page.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -246,7 +244,10 @@ class _HomePageState extends State<HomePage> {
         ]
     ),
 
-      bottomNavigationBar: CustomBottomAppBar(context: context),
+      bottomNavigationBar: CustomBottomAppBar(
+        context: context,
+        importDictionary: _importDictionary, // Передаем функцию
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           await Navigator.push(

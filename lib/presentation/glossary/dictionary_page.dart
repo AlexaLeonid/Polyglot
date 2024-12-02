@@ -57,23 +57,21 @@ class _DictionaryPageState extends State<DictionaryPage> {
       final translatedWord = row['translated_word'] as String;
       final languageName = row['language_name'] as String;
 
-      // Если слово еще не добавлено в группу, создаем его
       if (!groupedWords.containsKey(wordId)) {
         groupedWords[wordId] = {};
       }
 
-      // Привязываем перевод к языку
       groupedWords[wordId]![languageName] = translatedWord;
     }
 
-    // Преобразуем в список для DataTable
-    return groupedWords.values.map((translations) {
-      // Формируем список строк, соответствующий языкам
+    // Добавляем ID слова как первый элемент списка
+    return groupedWords.entries.map((entry) {
+      final wordTranslations = entry.value;
       final wordList = List.generate(languages.length, (index) => '');
       for (int i = 0; i < languages.length; i++) {
-        wordList[i] = translations[languages[i]] ?? ''; // Перевод или пустая строка
+        wordList[i] = wordTranslations[languages[i]] ?? '';
       }
-      return wordList;
+      return [entry.key.toString(), ...wordList]; // ID слова + переводы
     }).toList();
   }
 
@@ -163,6 +161,85 @@ class _DictionaryPageState extends State<DictionaryPage> {
     );
   }
 
+  Future<void> _showEditWordForm(int wordId) async {
+    final dbPath = await getDatabasesPath();
+    final db = await openDatabase('$dbPath/dictionary.db');
+
+    // Получаем текущие переводы слова
+    final translationRows = await db.rawQuery('''
+    SELECT t.language_id, t.translated_word, l.name AS language_name
+    FROM translations t
+    INNER JOIN languages l ON t.language_id = l.id
+    WHERE t.word_id = ?
+  ''', [wordId]);
+
+    // Создаем контроллеры для текстовых полей
+    final translationControllers = {
+      for (var row in translationRows)
+        row['language_id'] as int: TextEditingController(text: row['translated_word'] as String),
+    };
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBE8),
+          title: const Text('Редактировать слово'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: translationControllers.entries.map((entry) {
+                final languageId = entry.key;
+                final languageName = translationRows
+                    .firstWhere((row) => row['language_id'] == languageId)['language_name'] as String;
+
+                return TextField(
+                  controller: entry.value,
+                  decoration: InputDecoration(labelText: 'Перевод на $languageName'),
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Icon(
+                Icons.close,
+                color: Color(0xFF438589),
+                size: 30,
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                // Обновляем переводы
+                for (var entry in translationControllers.entries) {
+                  final languageId = entry.key;
+                  final translatedWord = entry.value.text.trim();
+
+                  await db.update(
+                    'translations',
+                    {'translated_word': translatedWord},
+                    where: 'word_id = ? AND language_id = ?',
+                    whereArgs: [wordId, languageId],
+                  );
+                }
+
+                Navigator.of(context).pop();
+                _loadData(); // Обновляем данные
+              },
+              child: const Icon(
+                Icons.done,
+                color: Color(0xFF438589),
+                size: 30,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _saveWord(Map<int, String> translations) async {
     final dbPath = await getDatabasesPath();
     final db = await openDatabase('$dbPath/dictionary.db');
@@ -226,18 +303,22 @@ class _DictionaryPageState extends State<DictionaryPage> {
                     child: languages.isEmpty
                         ? const Center(child: CircularProgressIndicator())
                         : DataTable(
-                      columns: languages
-                          .map((lang) => DataColumn(label: Text(lang)))
-                          .toList(),
-                      rows: words
-                          .map(
-                            (wordRow) => DataRow(
-                          cells: wordRow
-                              .map((word) => DataCell(Text(word)))
-                              .toList(),
-                        ),
-                      )
-                          .toList(),
+                      columns: languages.map((lang) => DataColumn(label: Text(lang))).toList(),
+                      rows: words.map(
+                            (wordRow) {
+                          final wordId = int.parse(wordRow[0]); // ID слова
+                          return DataRow(
+                            cells: wordRow.sublist(1).map(
+                                  (word) {
+                                return DataCell(
+                                  Text(word),
+                                  onTap: () => _showEditWordForm(wordId),
+                                );
+                              },
+                            ).toList(),
+                          );
+                        },
+                      ).toList(),
                     ),
                   ),
                 ),

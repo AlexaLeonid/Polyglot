@@ -1,6 +1,13 @@
 import 'side_menu.dart';
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
+import 'dictionary_page.dart';
+import 'glossary_addition_page.dart';
+import 'dart:convert'; // Для работы с JSON
+import 'dart:io'; // Для работы с файлами
+import 'package:path_provider/path_provider.dart'; // Для получения директории
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'bottom_menu.dart';
 import 'glossary/dictionary_page.dart';
 import 'glossary/glossary_addition_page.dart';
@@ -22,6 +29,122 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _dictionariesFuture = DatabaseHelper.instance.fetchDictionariesWithLanguages();
     });
+  }
+
+  Future<File?> _pickFile() async {
+    final result = await FilePicker.platform.pickFiles();
+    if (result != null) {
+      return File(result.files.single.path!);
+    } else {
+      return null;
+    }
+  }
+
+  Future<int?> _getLanguageIdByCode(String code) async {
+    final dbHelper = await DatabaseHelper.instance;
+    final language = await dbHelper.getLanguageByCode(code); // Запрос в БД по коду языка
+    return language != null ? language['id'] : null;
+  }
+
+  Future<void> _exportDictionary(int dictionaryId) async {
+    final dbHelper = await DatabaseHelper.instance;
+
+    try {
+      // Преобразуем в JSON
+      final jsonExport = await dbHelper.exportSpecificDictionariesToJson([dictionaryId]); // Используем await
+
+      // Сохраняем файл
+      final dictionary = await dbHelper.fetchDictionaryById(dictionaryId);
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/${dictionary["name"]}.json');
+      await file.writeAsString(jsonExport);
+
+      // Используем Share для отправки файла
+      await Share.shareXFiles([XFile(file.path)], text: 'Вот экспортированный словарь: ${dictionary["name"]}');
+
+      // Информируем пользователя
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Экспорт завершен и файл отправлен!')),
+      );
+    } catch (e) {
+      // Обработка ошибки
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при экспорте: $e')),
+      );
+    }
+  }
+
+  Future<void> _importDictionary() async {
+    final dbHelper = await DatabaseHelper.instance;
+
+    // Открываем файл импорта
+    final file = await _pickFile();
+    if (file == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Не удалось выбрать файл')),
+      );
+      return;
+    }
+
+    // Чтение содержимого файла
+    final fileContent = await file.readAsString();
+    final List<dynamic> importData = jsonDecode(fileContent);
+
+    for (var dictionaryData in importData) {
+      final dictionary = dictionaryData['dictionary'];
+
+      // Вставляем словарь в базу
+      final dictionaryId = await dbHelper.insertDictionary(
+        dictionary['name'],
+        dictionary['description'],
+      );
+
+      // Обработка языков
+      final languages = dictionary['languages'] ?? [];
+      for (var language in languages) {
+        // Проверяем, существует ли язык
+        final languageId = await _getLanguageIdByCode(language['code']);
+        int finalLanguageId;
+
+        if (languageId != null) {
+          // Язык существует, используем его ID
+          finalLanguageId = languageId;
+        } else {
+          // Добавляем новый язык
+          finalLanguageId = await dbHelper.insertLanguage(language['name'], language['code']);
+        }
+
+        // Добавляем язык в словарь
+        await dbHelper.insertLanguageForDictionary(dictionaryId, finalLanguageId);
+      }
+
+      // Обработка слов и их переводов
+      final words = dictionary['words'] ?? [];
+      for (var wordData in words) {
+        final wordId = await dbHelper.insertWord(dictionaryId);
+        for (var translation in wordData['translations']) {
+          // Получаем ID языка по коду
+          final languageId = await _getLanguageIdByCode(translation['language_code']);
+          if (languageId != null) {
+            await dbHelper.insertTranslation(
+              wordId,
+              languageId,
+              translation['translated_word'],
+            );
+          } else {
+            throw Exception("Язык с кодом ${translation['language_code']} не найден!");
+          }
+        }
+      }
+    }
+
+    // Информируем пользователя о завершении импорта
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Импорт завершен!')),
+    );
+
+    // Перезагружаем данные
+    _loadDictionaries();
   }
 
   @override
@@ -89,6 +212,8 @@ class _HomePageState extends State<HomePage> {
                           onSelected: (value) {
                             if (value == 'delete') {
                               _deleteDictionary(dictionary['id']);
+                            } else if (value == 'export') {
+                              _exportDictionary(dictionary['id']);
                             }
                           },
                           itemBuilder: (context) => [
@@ -96,16 +221,20 @@ class _HomePageState extends State<HomePage> {
                               value: 'delete',
                               child: Text('Удалить'),
                             ),
+                            PopupMenuItem(
+                              value: 'export',
+                              child: Text('Экспортировать'),
+                            ),
                           ],
                         ),
-                        onTap: () {
+                          onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => DictionaryPage(dictionaryId: dictionary['id']),
                             ),
                           );
-                        }, //родип окнесоК
+                        },
                       ),
                     );
                   },

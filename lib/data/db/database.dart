@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:ffi';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -95,6 +98,22 @@ class DatabaseHelper {
     }
   }
 
+  // Функция для поиска языка по коду
+  Future<Map<String, dynamic>?> getLanguageByCode(String code) async {
+    final db = await _database;
+    final result = await db!.query(
+      'languages',
+      where: 'code = ?',
+      whereArgs: [code],
+    );
+
+    if (result.isNotEmpty) {
+      return result.first;
+    } else {
+      return null;
+    }
+  }
+
   /// Insert operations
   Future<int> insertLanguage(String name, String code) async {
     final db = await database;
@@ -157,6 +176,16 @@ class DatabaseHelper {
   Future<List<Map<String, dynamic>>> fetchDictionaries() async {
     final db = await database;
     return await db.query('dictionaries');
+  }
+
+  Future<Map<String, dynamic>> fetchDictionaryById(int dictionaryId) async {
+    final db = await database;
+    final result = await db.query(
+      'dictionaries',
+      where: 'id = ?',
+      whereArgs: [dictionaryId],
+    );
+    return result.isNotEmpty ? result.first : {};
   }
 
   Future<List<Map<String, dynamic>>> fetchWordsInDictionary(int dictionaryId) async {
@@ -231,6 +260,72 @@ class DatabaseHelper {
     );
   }
 
+  Future<String> exportSpecificDictionariesToJson(List<int> dictionaryIds) async {
+    final db = await database;
+
+    // Получаем словари и их языки
+    final dictionaries = await db.rawQuery('''
+    SELECT d.id, d.name, d.description, 
+           GROUP_CONCAT(l.name, ',') AS language_names,
+           GROUP_CONCAT(l.code, ',') AS language_codes
+    FROM dictionaries d
+    LEFT JOIN dictionary_languages dl ON d.id = dl.dictionary_id
+    LEFT JOIN languages l ON dl.language_id = l.id
+    WHERE d.id IN (${dictionaryIds.join(',')})
+    GROUP BY d.id, d.name, d.description
+  ''');
+
+    // Собираем данные о словах и переводах для каждого словаря
+    List<Map<String, dynamic>> exportData = [];
+    for (final dictionary in dictionaries) {
+      final words = await db.rawQuery('''
+      SELECT w.id AS word_id
+      FROM words w
+      WHERE w.dictionary_id = ?
+    ''', [dictionary['id']]);
+
+      // Для каждого слова получаем переводы
+      List<Map<String, dynamic>> wordsData = [];
+      for (final word in words) {
+        final translations = await db.rawQuery('''
+        SELECT t.translated_word, l.code AS language_code
+        FROM translations t
+        INNER JOIN languages l ON t.language_id = l.id
+        WHERE t.word_id = ?
+      ''', [word['word_id']]);
+
+        wordsData.add({
+          "translations": translations,
+        });
+      }
+
+      // Формируем объект словаря
+      exportData.add({
+        "dictionary": {
+          "name": dictionary['name'],
+          "description": dictionary['description'],
+          "languages": _parseLanguages(
+              dictionary['language_names'] as String?,
+              dictionary['language_codes'] as String?
+          ),
+          "words": wordsData,
+        }
+      });
+    }
+
+    return jsonEncode(exportData);
+  }
+
+  List<Map<String, String>> _parseLanguages(String? names, String? codes) {
+    if (names == null || codes == null) return [];
+    final nameList = names.split(',');
+    final codeList = codes.split(',');
+    return List.generate(nameList.length, (i) => {
+      "name": nameList[i],
+      "code": codeList[i],
+    });
+  }
+
   Future<Map<int, Map<String, Map<String, List<String>>>>> fetchDictionaryOfDictionariesWithLanguages(
       List<int> dictionaryIds) async {
     final db = await database;
@@ -301,4 +396,6 @@ class DatabaseHelper {
 
 }
 
-
+extension on Object? {
+  split(String s) {}
+}

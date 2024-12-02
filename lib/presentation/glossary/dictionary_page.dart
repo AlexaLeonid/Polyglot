@@ -111,7 +111,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
                     return TextField(
                       controller: entry.value,
                       decoration: InputDecoration(
-                        labelText: 'Перевод на $languageName',
+                        labelText: languageName,
                       ),
                     );
                   }).toList(),
@@ -194,7 +194,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
 
                 return TextField(
                   controller: entry.value,
-                  decoration: InputDecoration(labelText: 'Перевод на $languageName'),
+                  decoration: InputDecoration(labelText: languageName),
                 );
               }).toList(),
             ),

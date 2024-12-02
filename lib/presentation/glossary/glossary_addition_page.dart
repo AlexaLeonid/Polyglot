@@ -53,6 +53,9 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
               onPressed: () {
                 Navigator.pop(context);
               },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
               child: Text('Отмена'),
             ),
             ElevatedButton(
@@ -80,6 +83,10 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                   );
                 }
               },
+              style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF438589),
+              foregroundColor: Colors.black,
+            ),
               child: Text('Добавить'),
             ),
           ],

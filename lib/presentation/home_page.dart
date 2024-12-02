@@ -206,24 +206,37 @@ class _HomePageState extends State<HomePage> {
                               ),
                           ],
                         ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'delete') {
-                              _deleteDictionary(dictionary['id']);
-                            } else if (value == 'export') {
-                              _exportDictionary(dictionary['id']);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Удалить'),
+                        trailing: Theme(
+                          data: Theme.of(context).copyWith(
+                            popupMenuTheme: PopupMenuThemeData(
+                              color: Color(0xFFFFFBE6), // Фон для всплывающего меню
                             ),
-                            PopupMenuItem(
-                              value: 'export',
-                              child: Text('Экспортировать'),
-                            ),
-                          ],
+                          ),
+                          child: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'delete') {
+                                _deleteDictionary(dictionary['id']);
+                              } else if (value == 'export') {
+                                _exportDictionary(dictionary['id']);
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Удалить',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'export',
+                                child: Text(
+                                  'Экспортировать',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                           onTap: () {
                           Navigator.push(

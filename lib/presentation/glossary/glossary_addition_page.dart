@@ -26,6 +26,7 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBE8),
           title: Text('Добавить язык'),
           content: Column(
             mainAxisSize: MainAxisSize.min,

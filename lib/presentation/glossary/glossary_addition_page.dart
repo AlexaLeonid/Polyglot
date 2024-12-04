@@ -196,6 +196,8 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                   itemBuilder: (context, index) {
                     final language = _languages[index];
                     return CheckboxListTile(
+                      activeColor: Color(0xFF438589),
+                      checkColor: Color(0xFFFDFBE8),
                       title: Text(language['name']),
                       value: _selectedLanguages.contains(language['id']),
                       onChanged: (bool? selected) {

@@ -216,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                           child: PopupMenuButton<String>(
                             onSelected: (value) async {
                               if (value == 'delete') {
-                                _deleteDictionary(dictionary['id']);
+                                _ConfirmDeletingForm(dictionary['id']);
                               } else if (value == 'export') {
                                 _exportDictionary(dictionary['id']);
                               } else if (value == 'edit') {
@@ -294,6 +294,59 @@ class _HomePageState extends State<HomePage> {
     final dbHelper = await DatabaseHelper.instance;
     await dbHelper.deleteDictionary(dictionaryId);
     _loadDictionaries(); // Обновляем список после удаления
+  }
+
+  Future<void> _ConfirmDeletingForm(int dictionaryId) async {
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBE8),
+          title: const Text('Вы действительно хотите удалить глоссарий?', style: TextStyle(fontSize: 18),),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+              width: 70.0, // Set your desired width
+              height: 30.0, // Set your desired height
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF438589),
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Color(0xFFFDFBE8),
+                    size: 17,
+                  ),
+                ),
+              ),
+              SizedBox(
+              width: 70.0, // Set your desired width
+              height: 30.0, // Set your desired height
+                 child: ElevatedButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                      _deleteDictionary(dictionaryId);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF438589),
+                    ),
+                    child: Icon(
+                      Icons.done,
+                      color: Color(0xFFFDFBE8),
+                      size: 17,
+                    ),
+                  ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

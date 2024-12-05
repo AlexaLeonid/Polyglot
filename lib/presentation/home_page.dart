@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/db/database.dart';
 import 'glossary/dictionary_page.dart';
 import 'glossary/glossary_addition_page.dart';
+import 'glossary/glossary_editing_page.dart';
 import 'dart:convert'; // Для работы с JSON
 import 'dart:io'; // Для работы с файлами
 import 'package:path_provider/path_provider.dart'; // Для получения директории
@@ -213,14 +214,27 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           child: PopupMenuButton<String>(
-                            onSelected: (value) {
+                            onSelected: (value) async {
                               if (value == 'delete') {
                                 _deleteDictionary(dictionary['id']);
                               } else if (value == 'export') {
                                 _exportDictionary(dictionary['id']);
+                              } else if (value == 'edit') {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => EditDictionaryPage(dictionaryId: dictionary['id'],)),
+                                );
+                                _loadDictionaries(); // Перезагружаем список после изменения
                               }
                             },
                             itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Text(
+                                  'Изменить',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
                               PopupMenuItem(
                                 value: 'delete',
                                 child: Text(
@@ -282,3 +296,5 @@ class _HomePageState extends State<HomePage> {
     _loadDictionaries(); // Обновляем список после удаления
   }
 }
+
+

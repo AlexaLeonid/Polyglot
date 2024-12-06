@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'quiz/quiz_start_page.dart';
 
 class CustomBottomAppBar extends StatelessWidget {
   final BuildContext context;
@@ -11,21 +10,24 @@ class CustomBottomAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomAppBar(
+      height: 70,
       color: Color(0xFF438589), // Бирюзовый цвет
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           IconButton(
-            icon: Icon(Icons.extension, color: Color(0xFFFDFBE8)),
+            icon: Icon(Icons.upload_outlined, color: Color(0xFFFDFBE8), size: 30,),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => QuizPage()),
-              );
+              if (importDictionary != null) {
+                importDictionary!(); // Вызываем переданную функцию, если она есть
+              } else {
+                // Логика по умолчанию, если функции нет
+                print('Импорт не доступен');
+              }
             },
           ),
           IconButton(
-            icon: Icon(Icons.list, color: Color(0xFFFDFBE8)),
+            icon: Icon(Icons.list_alt_outlined, color: Color(0xFFFDFBE8), size: 30),
             onPressed: () {
               Navigator.push(
                 context,
@@ -34,14 +36,14 @@ class CustomBottomAppBar extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(Icons.download, color: Color(0xFFFDFBE8)),
+            icon: Icon(Icons.cloud_outlined, color: Color(0xFFFDFBE8), size: 30),
             onPressed: () {
-              if (importDictionary != null) {
-                importDictionary!(); // Вызываем переданную функцию, если она есть
-              } else {
-                // Логика по умолчанию, если функции нет
-                print('Импорт не доступен');
-              }
+              // if (importDictionary != null) {
+              //   importDictionary!(); // Вызываем переданную функцию, если она есть
+              // } else {
+              //   // Логика по умолчанию, если функции нет
+              //   print('Импорт не доступен');
+              // }
             },
           ),
         ],

@@ -1,3 +1,5 @@
+import 'quiz/quiz_start_page.dart';
+
 import 'side_menu.dart';
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
@@ -151,17 +153,31 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF438589), // Бирюзовый цвет
-        title: SizedBox.shrink(), // Убираем текст в AppBar
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-            Icons.person_outline, // Иконка пользователя
-            color: Color(0xFFFDFBE8),
-            size: 28,
-          ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Builder(
+              builder: (context) => IconButton(
+                icon: Icon(
+                  Icons.person_outline, // Иконка пользователя
+                  color: Color(0xFFFDFBE8),
+                  size: 30,
+                ),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.extension_outlined, color: Color(0xFFFDFBE8), size: 30),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => QuizPage()),
+                );
+              },
+            ),
+          ],
         ),
 
       ),
@@ -284,9 +300,9 @@ class _HomePageState extends State<HomePage> {
           _loadDictionaries(); // Перезагружаем список после добавления
         },
         backgroundColor: Color(0xFF438589),
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Color(0xFFFDFBE8)),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
 
   }

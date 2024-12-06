@@ -337,20 +337,18 @@ class _DictionaryPageState extends State<DictionaryPage> {
               ),
             ),
           ),
-          // Кнопка редактирования
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: FloatingActionButton(
-              backgroundColor: const Color(0xFF438589),
-              onPressed: () async {
-                await _showAddWordForm();
-                await _loadData(); // Перезагружаем данные
-              },
-              child: const Icon(Icons.add, color: Color(0xFFFDFBE8)),
-            ),
-          ),
         ],
       ),
+      // Кнопка добавления слова
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF438589),
+          onPressed: () async {
+            await _showAddWordForm();
+            await _loadData(); // Перезагружаем данные
+          },
+          child: const Icon(Icons.add, color: Color(0xFFFDFBE8)),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

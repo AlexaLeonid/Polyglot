@@ -26,6 +26,7 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBE8),
           title: Text('Добавить язык'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
@@ -53,6 +54,9 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
               onPressed: () {
                 Navigator.pop(context);
               },
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.black,
+              ),
               child: Text('Отмена'),
             ),
             ElevatedButton(
@@ -80,6 +84,10 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                   );
                 }
               },
+              style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF438589),
+              foregroundColor: Colors.black,
+            ),
               child: Text('Добавить'),
             ),
           ],
@@ -188,6 +196,8 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
                   itemBuilder: (context, index) {
                     final language = _languages[index];
                     return CheckboxListTile(
+                      activeColor: Color(0xFF438589),
+                      checkColor: Color(0xFFFDFBE8),
                       title: Text(language['name']),
                       value: _selectedLanguages.contains(language['id']),
                       onChanged: (bool? selected) {

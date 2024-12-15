@@ -1,8 +1,11 @@
+import 'quiz/quiz_start_page.dart';
+
 import 'side_menu.dart';
 import 'package:flutter/material.dart';
 import '../data/db/database.dart';
 import 'glossary/dictionary_page.dart';
 import 'glossary/glossary_addition_page.dart';
+import 'glossary/glossary_editing_page.dart';
 import 'dart:convert'; // Для работы с JSON
 import 'dart:io'; // Для работы с файлами
 import 'package:path_provider/path_provider.dart'; // Для получения директории
@@ -150,17 +153,31 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Color(0xFF438589), // Бирюзовый цвет
-        title: SizedBox.shrink(), // Убираем текст в AppBar
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-            Icons.person_outline, // Иконка пользователя
-            color: Color(0xFFFDFBE8),
-            size: 28,
-          ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Builder(
+              builder: (context) => IconButton(
+                icon: Icon(
+                  Icons.person_outline, // Иконка пользователя
+                  color: Color(0xFFFDFBE8),
+                  size: 30,
+                ),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+              ),
+            ),
+            IconButton(
+              icon: Icon(Icons.extension_outlined, color: Color(0xFFFDFBE8), size: 30),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => QuizPage()),
+                );
+              },
+            ),
+          ],
         ),
 
       ),
@@ -206,24 +223,50 @@ class _HomePageState extends State<HomePage> {
                               ),
                           ],
                         ),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'delete') {
-                              _deleteDictionary(dictionary['id']);
-                            } else if (value == 'export') {
-                              _exportDictionary(dictionary['id']);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Удалить'),
+                        trailing: Theme(
+                          data: Theme.of(context).copyWith(
+                            popupMenuTheme: PopupMenuThemeData(
+                              color: Color(0xFFFFFBE6), // Фон для всплывающего меню
                             ),
-                            PopupMenuItem(
-                              value: 'export',
-                              child: Text('Экспортировать'),
-                            ),
-                          ],
+                          ),
+                          child: PopupMenuButton<String>(
+                            onSelected: (value) async {
+                              if (value == 'delete') {
+                                _ConfirmDeletingForm(dictionary['id']);
+                              } else if (value == 'export') {
+                                _exportDictionary(dictionary['id']);
+                              } else if (value == 'edit') {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => EditDictionaryPage(dictionaryId: dictionary['id'],)),
+                                );
+                                _loadDictionaries(); // Перезагружаем список после изменения
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'edit',
+                                child: Text(
+                                  'Изменить',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text(
+                                  'Удалить',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'export',
+                                child: Text(
+                                  'Экспортировать',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                           onTap: () {
                           Navigator.push(
@@ -242,7 +285,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         ]
-    ),
+      ),
 
       bottomNavigationBar: CustomBottomAppBar(
         context: context,
@@ -257,9 +300,9 @@ class _HomePageState extends State<HomePage> {
           _loadDictionaries(); // Перезагружаем список после добавления
         },
         backgroundColor: Color(0xFF438589),
-        child: Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Color(0xFFFDFBE8)),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
 
   }
@@ -268,4 +311,59 @@ class _HomePageState extends State<HomePage> {
     await dbHelper.deleteDictionary(dictionaryId);
     _loadDictionaries(); // Обновляем список после удаления
   }
+
+  Future<void> _ConfirmDeletingForm(int dictionaryId) async {
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBE8),
+          title: const Text('Вы действительно хотите удалить глоссарий?', style: TextStyle(fontSize: 18),),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              SizedBox(
+              width: 70.0, // Set your desired width
+              height: 30.0, // Set your desired height
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF438589),
+                  ),
+                  child: Icon(
+                    Icons.close,
+                    color: Color(0xFFFDFBE8),
+                    size: 17,
+                  ),
+                ),
+              ),
+              SizedBox(
+              width: 70.0, // Set your desired width
+              height: 30.0, // Set your desired height
+                 child: ElevatedButton(
+                    onPressed: (){
+                      Navigator.pop(context);
+                      _deleteDictionary(dictionaryId);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFF438589),
+                    ),
+                    child: Icon(
+                      Icons.done,
+                      color: Color(0xFFFDFBE8),
+                      size: 17,
+                    ),
+                  ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
+
+

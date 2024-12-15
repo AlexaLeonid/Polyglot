@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -173,9 +172,24 @@ class DatabaseHelper {
     return await db.query('languages');
   }
 
+
   Future<List<Map<String, dynamic>>> fetchDictionaries() async {
     final db = await database;
     return await db.query('dictionaries');
+  }
+
+  Future<List<Map<String, dynamic>>> fetchDictionaryLanguages(int dictionaryId) async {
+    final db = await database;
+
+    // Получаем языки, связанные с данным словарём
+    final result = await db.rawQuery('''
+    SELECT l.id, l.name, l.code
+    FROM languages l
+    INNER JOIN dictionary_languages dl ON dl.language_id = l.id
+    WHERE dl.dictionary_id = ?
+  ''', [dictionaryId]);
+
+    return result;
   }
 
   Future<Map<String, dynamic>> fetchDictionaryById(int dictionaryId) async {
@@ -233,6 +247,17 @@ class DatabaseHelper {
       'translations',
       where: 'id = ?',
       whereArgs: [translationId],
+    );
+  }
+
+  Future<void> clearLanguagesForDictionary(int dictionaryId) async {
+    final db = await database;
+
+    // Удаление всех записей для указанного словаря
+    await db.delete(
+      'dictionary_languages',
+      where: 'dictionary_id = ?',
+      whereArgs: [dictionaryId],
     );
   }
 

@@ -111,7 +111,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
                     return TextField(
                       controller: entry.value,
                       decoration: InputDecoration(
-                        labelText: 'Перевод на $languageName',
+                        labelText: languageName,
                       ),
                     );
                   }).toList(),
@@ -194,7 +194,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
 
                 return TextField(
                   controller: entry.value,
-                  decoration: InputDecoration(labelText: 'Перевод на $languageName'),
+                  decoration: InputDecoration(labelText: languageName),
                 );
               }).toList(),
             ),
@@ -263,6 +263,8 @@ class _DictionaryPageState extends State<DictionaryPage> {
       }
     }
   }
+  final _horizontalController = ScrollController();
+  final _verticalController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -290,56 +292,63 @@ class _DictionaryPageState extends State<DictionaryPage> {
               },
             ),
           ),
-          // Таблица
+          // Таблица с прокруткой
           Expanded(
             child: Scrollbar(
-              thumbVisibility: true, // Показывает скроллбар при прокрутке
+              controller: _horizontalController,
+              scrollbarOrientation: ScrollbarOrientation.bottom,
+              thumbVisibility: true,
               child: SingleChildScrollView(
+                controller: _horizontalController,
                 scrollDirection: Axis.horizontal,
                 child: Scrollbar(
+                  controller: _verticalController,
+                  scrollbarOrientation: ScrollbarOrientation.right,
                   thumbVisibility: true,
                   child: SingleChildScrollView(
+                    controller: _verticalController,
                     scrollDirection: Axis.vertical,
-                    child: languages.isEmpty
-                        ? const Center(child: CircularProgressIndicator())
-                        : DataTable(
-                      columns: languages.map((lang) => DataColumn(label: Text(lang))).toList(),
-                      rows: words.map(
-                            (wordRow) {
-                          final wordId = int.parse(wordRow[0]); // ID слова
-                          return DataRow(
-                            cells: wordRow.sublist(1).map(
-                                  (word) {
-                                return DataCell(
-                                  Text(word),
-                                  onTap: () => _showEditWordForm(wordId),
-                                );
-                              },
-                            ).toList(),
-                          );
-                        },
-                      ).toList(),
+                    child: Container(
+                      child: languages.isEmpty
+                          ? const Center(child: CircularProgressIndicator())
+                          : DataTable(
+                        columns: languages
+                            .map((lang) => DataColumn(label: Text(lang)))
+                            .toList(),
+                        rows: words.map(
+                              (wordRow) {
+                            final wordId = int.parse(wordRow[0]); // ID слова
+                            return DataRow(
+                              cells: wordRow.sublist(1).map(
+                                    (word) {
+                                  return DataCell(
+                                    Text(word),
+                                    onTap: () => _showEditWordForm(wordId),
+                                  );
+                                },
+                              ).toList(),
+                            );
+                          },
+                        ).toList(),
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-          // Кнопка редактирования
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: FloatingActionButton(
-              backgroundColor: const Color(0xFF438589),
-              onPressed: () async {
-                await _showAddWordForm();
-                await _loadData(); // Перезагружаем данные
-              },
-              child: const Icon(Icons.add, color: Colors.white),
-            ),
-          ),
         ],
       ),
+      // Кнопка добавления слова
+      floatingActionButton: FloatingActionButton(
+          backgroundColor: const Color(0xFF438589),
+          onPressed: () async {
+            await _showAddWordForm();
+            await _loadData(); // Перезагружаем данные
+          },
+          child: const Icon(Icons.add, color: Color(0xFFFDFBE8)),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
-
   }
 }

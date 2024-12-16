@@ -6,7 +6,6 @@ import 'dart:io';
 
 import '../../data/db/database.dart';
 import '../bottom_menu.dart';
-import '../glossary/glossary_addition_page.dart';
 
 class Dictionary {
   final String name;
@@ -137,9 +136,9 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
       }
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Импорт завершен!')),
-    );
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(content: Text('Импорт завершен!')),
+    // );
   }
 
   Future<int?> _getLanguageIdByCode(String code) async {
@@ -193,6 +192,12 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
               itemBuilder: (context, index) {
                 final dictionary = snapshot.data![index];
                 return Card(
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      color: Color(0xFF438589), //<-- SEE HERE
+                    ),
+                    borderRadius: BorderRadius.circular(20.0),
+                  ),
                   color: Color(0xFFFDFBE8),
                   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: ListTile(
@@ -209,16 +214,24 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                       ],
                     ),
                     trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(dictionary.rating.toString(),
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16)),
-                        Icon(Icons.star, color: Colors.amber, size: 16),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(dictionary.rating.toString(),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16)),
+
+                            SizedBox(width: 4), // Отступ между текстом и иконкой
+                            Icon(Icons.star, color: Colors.amber, size: 16),
+                          ],
+                        ),
+                        Icon(Icons.cloud_download_outlined, color: Colors.grey),
                       ],
                     ),
                     onTap: () => downloadAndImportDictionary(dictionary.id),
-                    leading: Icon(Icons.cloud_download, color: Colors.grey),
+                    // leading: Icon(Icons.cloud_download, color: Colors.grey),
                   ),
                 );
               },

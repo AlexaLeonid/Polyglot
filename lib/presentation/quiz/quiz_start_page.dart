@@ -115,10 +115,18 @@ class _QuizPageState extends State<QuizPage> {
                       final isSelected = selectedDictionaries.contains(dictionary['id']);
 
                       return Card(
+                        shape: RoundedRectangleBorder(
+                          side: BorderSide(
+                            color: Color(0xFF438589), //<-- SEE HERE
+                          ),
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
                         color: Color(0xFFFDFBE8),
                         margin: EdgeInsets.only(bottom: 16.0),
                         child: ListTile(
-                          title: Text(dictionary['name'] ?? 'Без названия'),
+                          title: Text(dictionary['name'] ?? 'Без названия',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

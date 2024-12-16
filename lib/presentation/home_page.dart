@@ -168,10 +168,18 @@ class _HomePageState extends State<HomePage> {
                   itemBuilder: (context, index) {
                     final dictionary = dictionaries[index];
                     return Card(
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          color: Color(0xFF438589), //<-- SEE HERE
+                        ),
+                        borderRadius: BorderRadius.circular(20.0),
+                      ),
                       color: Color(0xFFFDFBE8),
                       margin: EdgeInsets.only(bottom: 16.0),
                       child: ListTile(
-                        title: Text(dictionary['name'] ?? 'Без названия'),
+                        title: Text(dictionary['name'] ?? 'Без названия',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -190,6 +198,14 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           child: PopupMenuButton<String>(
+                            child: Container(
+                              height: 36,
+                              width: 48,
+                              alignment: Alignment.topRight,
+                              child: Icon(
+                                Icons.more_vert,
+                              ),
+                            ),
                             onSelected: (value) async {
                               if (value == 'delete') {
                                 _ConfirmDeletingForm(dictionary['id']);

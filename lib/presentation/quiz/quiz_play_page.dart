@@ -107,9 +107,9 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       if (currentWordCounter < allWords.length) {
         _loadNextWord();
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Вы завершили тест. Отличная работа!')),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   SnackBar(content: Text('Вы завершили тест. Отличная работа!')),
+        // );
         Navigator.push(
           context,
           MaterialPageRoute(

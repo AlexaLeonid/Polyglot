@@ -46,6 +46,8 @@ class _QuizPageState extends State<QuizPage> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
               ),
+              Text('Тренировка',
+                  style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
               IconButton(
                 icon: Icon(
                   Icons.play_arrow,

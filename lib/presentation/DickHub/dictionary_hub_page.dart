@@ -173,6 +173,8 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
+            Text('Библиотека',
+                style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
           ],
         ),
 

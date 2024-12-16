@@ -14,8 +14,10 @@ class MyDrawer extends StatelessWidget {
             padding: EdgeInsets.zero,
             child: UserAccountsDrawerHeader (
               decoration: BoxDecoration(color: Color(0xFF438589)),
-              accountName: const Text('Кися'),
-              accountEmail: const Text("home@dartflutter.ru"),
+              accountName: const Text('Вася',
+                  style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 16)),
+              accountEmail: const Text("home@dartflutter.ru",
+                  style: TextStyle(color: Color(0xFFFDFBE8))),
               currentAccountPicture: Container(
                   decoration: const BoxDecoration(
                       shape: BoxShape.circle,

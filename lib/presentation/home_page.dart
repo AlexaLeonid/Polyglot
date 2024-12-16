@@ -128,6 +128,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
             ),
+            Text('Ваши словари',
+                style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
             IconButton(
               icon: Icon(Icons.extension_outlined, color: Color(0xFFFDFBE8), size: 30),
               onPressed: () {

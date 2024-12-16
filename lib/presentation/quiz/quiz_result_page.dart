@@ -93,7 +93,7 @@ class QuizResultPage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: CustomBottomAppBar(context: context),
+      bottomNavigationBar: CustomBottomAppBar(parentContext: context),
     );
   }
 }

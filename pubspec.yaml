@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
   sqflite: ^2.2.8
+  http: ^1.2.2
   path_provider: ^2.0.12
   file_picker: ^8.1.4
   share_plus: ^10.1.2

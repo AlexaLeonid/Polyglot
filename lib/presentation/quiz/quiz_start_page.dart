@@ -154,7 +154,7 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ],
       ),
-      bottomNavigationBar: CustomBottomAppBar(context: context),
+      bottomNavigationBar: CustomBottomAppBar(parentContext: context),
     );
   }
 }

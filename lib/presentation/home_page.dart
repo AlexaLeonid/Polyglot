@@ -6,12 +6,11 @@ import '../data/db/database.dart';
 import 'glossary/dictionary_page.dart';
 import 'glossary/glossary_addition_page.dart';
 import 'glossary/glossary_editing_page.dart';
-import 'dart:convert'; // Для работы с JSON
 import 'dart:io'; // Для работы с файлами
 import 'package:path_provider/path_provider.dart'; // Для получения директории
-import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'bottom_menu.dart';
+import 'package:http/http.dart' as http;
 
 class HomePage extends StatefulWidget {
   @override
@@ -32,19 +31,53 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<File?> _pickFile() async {
-    final result = await FilePicker.platform.pickFiles();
-    if (result != null) {
-      return File(result.files.single.path!);
-    } else {
-      return null;
-    }
-  }
-
-  Future<int?> _getLanguageIdByCode(String code) async {
+  Future<void> _sendToDictionaryHub(Map<String, dynamic> dictionary) async {
     final dbHelper = await DatabaseHelper.instance;
-    final language = await dbHelper.getLanguageByCode(code); // Запрос в БД по коду языка
-    return language != null ? language['id'] : null;
+
+    try {
+      // Генерация JSON файла с помощью существующего метода
+      final jsonExport = await dbHelper.exportSpecificDictionariesToJson([dictionary['id']]);
+
+      // Получение пути для временного хранения файла
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/${dictionary["name"]}.json');
+      await file.writeAsString(jsonExport);
+
+      // Создание запроса
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://ff44-31-162-229-191.ngrok-free.app/dictionaries/'), // Замените на ваш реальный URL
+      );
+
+      // Добавление полей формы
+      request.fields['name'] = dictionary['name'];
+      request.fields['lang_chain'] = dictionary['language_codes'];
+      request.fields['description'] = dictionary['description'];
+
+      // Прикрепление файла
+      request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+      // Выполнение запроса
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        // Успешный ответ
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Словарь успешно отправлен в DictionaryHub!')),
+        );
+      } else {
+        // Обработка ошибок
+        final responseBody = await response.stream.bytesToString();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка при отправке: $responseBody')),
+        );
+      }
+    } catch (e) {
+      // Обработка исключений
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+    }
   }
 
   Future<void> _exportDictionary(int dictionaryId) async {
@@ -73,79 +106,6 @@ class _HomePageState extends State<HomePage> {
         SnackBar(content: Text('Ошибка при экспорте: $e')),
       );
     }
-  }
-
-  Future<void> _importDictionary() async {
-    final dbHelper = await DatabaseHelper.instance;
-
-    // Открываем файл импорта
-    final file = await _pickFile();
-    if (file == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Не удалось выбрать файл')),
-      );
-      return;
-    }
-
-    // Чтение содержимого файла
-    final fileContent = await file.readAsString();
-    final List<dynamic> importData = jsonDecode(fileContent);
-
-    for (var dictionaryData in importData) {
-      final dictionary = dictionaryData['dictionary'];
-
-      // Вставляем словарь в базу
-      final dictionaryId = await dbHelper.insertDictionary(
-        dictionary['name'],
-        dictionary['description'],
-      );
-
-      // Обработка языков
-      final languages = dictionary['languages'] ?? [];
-      for (var language in languages) {
-        // Проверяем, существует ли язык
-        final languageId = await _getLanguageIdByCode(language['code']);
-        int finalLanguageId;
-
-        if (languageId != null) {
-          // Язык существует, используем его ID
-          finalLanguageId = languageId;
-        } else {
-          // Добавляем новый язык
-          finalLanguageId = await dbHelper.insertLanguage(language['name'], language['code']);
-        }
-
-        // Добавляем язык в словарь
-        await dbHelper.insertLanguageForDictionary(dictionaryId, finalLanguageId);
-      }
-
-      // Обработка слов и их переводов
-      final words = dictionary['words'] ?? [];
-      for (var wordData in words) {
-        final wordId = await dbHelper.insertWord(dictionaryId);
-        for (var translation in wordData['translations']) {
-          // Получаем ID языка по коду
-          final languageId = await _getLanguageIdByCode(translation['language_code']);
-          if (languageId != null) {
-            await dbHelper.insertTranslation(
-              wordId,
-              languageId,
-              translation['translated_word'],
-            );
-          } else {
-            throw Exception("Язык с кодом ${translation['language_code']} не найден!");
-          }
-        }
-      }
-    }
-
-    // Информируем пользователя о завершении импорта
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Импорт завершен!')),
-    );
-
-    // Перезагружаем данные
-    _loadDictionaries();
   }
 
   @override
@@ -234,13 +194,15 @@ class _HomePageState extends State<HomePage> {
                               if (value == 'delete') {
                                 _ConfirmDeletingForm(dictionary['id']);
                               } else if (value == 'export') {
-                                _exportDictionary(dictionary['id']);
+                                await _exportDictionary(dictionary['id']);
                               } else if (value == 'edit') {
                                 await Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => EditDictionaryPage(dictionaryId: dictionary['id'],)),
+                                  MaterialPageRoute(builder: (context) => EditDictionaryPage(dictionaryId: dictionary['id'])),
                                 );
                                 _loadDictionaries(); // Перезагружаем список после изменения
+                              } else if (value == 'send_to_hub') {
+                                await _sendToDictionaryHub(dictionary);
                               }
                             },
                             itemBuilder: (context) => [
@@ -262,6 +224,13 @@ class _HomePageState extends State<HomePage> {
                                 value: 'export',
                                 child: Text(
                                   'Экспортировать',
+                                  style: TextStyle(color: Colors.black), // Цвет текста
+                                ),
+                              ),
+                              PopupMenuItem(
+                                value: 'send_to_hub',
+                                child: Text(
+                                  'Отправить в DictionaryHub',
                                   style: TextStyle(color: Colors.black), // Цвет текста
                                 ),
                               ),
@@ -288,8 +257,7 @@ class _HomePageState extends State<HomePage> {
       ),
 
       bottomNavigationBar: CustomBottomAppBar(
-        context: context,
-        importDictionary: _importDictionary, // Передаем функцию
+        parentContext: context, // Передаем контекст родителя
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {

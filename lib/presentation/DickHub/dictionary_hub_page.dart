@@ -43,7 +43,7 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
 
   Future<List<Dictionary>> fetchDictionaries() async {
     final response = await http.get(Uri.parse(
-        'https://ff44-31-162-229-191.ngrok-free.app/dictionaries'));
+        'https://sublimely-many-mule.cloudpub.ru:443/dictionaries/'));
 
     if (response.statusCode == 200) {
       // Декодируем байты в строку с правильной кодировкой
@@ -58,7 +58,7 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
   Future<void> downloadAndImportDictionary(int id) async {
     try {
       final response = await http.get(Uri.parse(
-          'https://ff44-31-162-229-191.ngrok-free.app/dictionaries/$id'));
+          'https://sublimely-many-mule.cloudpub.ru:443/dictionaries/$id'));
 
       if (response.statusCode == 200) {
         // Декодируем байты в строку с правильной кодировкой

@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'quiz/quiz_start_page.dart';
 
 import 'side_menu.dart';
@@ -31,8 +33,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> _sendToDictionaryHub(Map<String, dynamic> dictionary) async {
+  Future<void> _sendToDictionaryHub(Map<String, dynamic> dictionary, bool isPrivate) async {
     final dbHelper = await DatabaseHelper.instance;
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('access_token');
 
     try {
       // Генерация JSON файла с помощью существующего метода
@@ -43,33 +48,42 @@ class _HomePageState extends State<HomePage> {
       final file = File('${directory.path}/${dictionary["name"]}.json');
       await file.writeAsString(jsonExport);
 
-      // Создание запроса
-      final request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://ff44-31-162-229-191.ngrok-free.app/dictionaries/'), // Замените на ваш реальный URL
-      );
-
-      // Добавление полей формы
-      request.fields['name'] = dictionary['name'];
-      request.fields['lang_chain'] = dictionary['language_codes'];
-      request.fields['description'] = dictionary['description'];
-
-      // Прикрепление файла
-      request.files.add(await http.MultipartFile.fromPath('file', file.path));
-
-      // Выполнение запроса
-      final response = await request.send();
-
-      if (response.statusCode == 200) {
-        // Успешный ответ
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Словарь успешно отправлен в DictionaryHub!')),
+      if (token != null) {
+        // Создание запроса
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('https://sublimely-many-mule.cloudpub.ru:443/dictionaries/'), // Замените на ваш реальный URL
         );
-      } else {
-        // Обработка ошибок
-        final responseBody = await response.stream.bytesToString();
+
+        // Добавление полей формы
+        request.headers['Authorization'] = 'Bearer $token';
+        request.fields['name'] = dictionary['name'];
+        request.fields['lang_chain'] = dictionary['language_codes'];
+        request.fields['description'] = dictionary['description'];
+        request.fields['is_private'] = isPrivate.toString();
+
+        // Прикрепление файла
+        request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+        // Выполнение запроса
+        final response = await request.send();
+
+        if (response.statusCode == 200) {
+          // Успешный ответ
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Словарь успешно отправлен в DictionaryHub!')),
+          );
+        } else {
+          // Обработка ошибок
+          final responseBody = await response.stream.bytesToString();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Ошибка при отправке: $responseBody')),
+          );
+        }
+      }
+      else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка при отправке: $responseBody')),
+          SnackBar(content: Text('Вы не авторизованы! Регистрируйся, пока по жопе не дали')),
         );
       }
     } catch (e) {
@@ -121,7 +135,7 @@ class _HomePageState extends State<HomePage> {
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(
-                  Icons.person_outline, // Иконка пользователя
+                  Icons.accessible, // TODO Поменять на три горизонтальные полосы
                   color: Color(0xFFFDFBE8),
                   size: 30,
                 ),
@@ -220,7 +234,29 @@ class _HomePageState extends State<HomePage> {
                                 );
                                 _loadDictionaries(); // Перезагружаем список после изменения
                               } else if (value == 'send_to_hub') {
-                                await _sendToDictionaryHub(dictionary);
+                                final isPrivate = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: Text('Сделать словарь приватным?'),
+                                      content: Text('Приватные словари будут видны только вам.'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false), // Не приватный
+                                          child: Text('Нет'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true), // Приватный
+                                          child: Text('Да'),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (isPrivate != null) {
+                                  await _sendToDictionaryHub(dictionary, isPrivate);
+                                }
                               }
                             },
                             itemBuilder: (context) => [

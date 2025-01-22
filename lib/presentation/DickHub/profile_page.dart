@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart'; // Для загрузки фото с устройства
 import 'package:http_parser/http_parser.dart';
@@ -22,95 +21,20 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _getProfile();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _getProfile() async {
     final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
 
-    if (token != null) {
-      try {
-        final response = await http.get(
-          Uri.parse('https://sublimely-many-mule.cloudpub.ru:443/user/profile'),
-          headers: {'Authorization': 'Bearer $token'},
-        );
-
-        if (response.statusCode == 200) {
-          final decodedBody = utf8.decode(response.bodyBytes);
-          final profileData = json.decode(decodedBody);
-
-          setState(() {
-            _username = profileData['username'];
-            _email = profileData['email'];
-            _fullname = profileData['fullname'];
-            _bio = profileData['bio'];
-          });
-
-          if (_username != null) {
-            await _loadProfilePhoto(_username!);
-          }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка загрузки профиля: ${response.body}')),
-          );
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> _loadProfilePhoto(String username) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('access_token');
-
-    if (token != null) {
-      try {
-        final response = await http.get(
-          Uri.parse('https://sublimely-many-mule.cloudpub.ru:443/user/photo/$username'),
-        );
-
-        if (response.statusCode == 200) {
-          final prefs = await SharedPreferences.getInstance();
-          final appDir = await getApplicationDocumentsDirectory();
-          final profilePhotoDir = Directory('${appDir.path}/profile_photos');
-
-          // Создаём директорию, если её нет
-          if (!profilePhotoDir.existsSync()) {
-            profilePhotoDir.createSync(recursive: true);
-          }
-
-          // Создаём уникальное имя для нового файла
-          final timestamp = DateTime.now().millisecondsSinceEpoch;
-          final newPhotoPath = '${profilePhotoDir.path}/photo_$timestamp.jpg';
-          final newPhotoFile = File(newPhotoPath);
-
-          await newPhotoFile.writeAsBytes(response.bodyBytes);
-
-          // Удаляем старое фото
-          final oldPhotoPath = prefs.getString('profile_photo_path');
-          if (oldPhotoPath != null) {
-            final oldFile = File(oldPhotoPath);
-            if (oldFile.existsSync()) {
-              oldFile.deleteSync();
-            }
-          }
-
-          // Сохраняем новый путь в SharedPreferences
-          await prefs.setString('profile_photo_path', newPhotoFile.path);
-
-          // Обновляем состояние
-          setState(() {
-            _profilePhoto = newPhotoFile.path;
-          });
-        }
-      } catch (e) {
-        print('Ошибка загрузки фото: $e');
-      }
-    }
+    // Загружаем сохранённые данные
+    setState(() {
+      _username = prefs.getString('username');
+      _email = prefs.getString('email');
+      _fullname = prefs.getString('fullname');
+      _bio = prefs.getString('bio');
+      _profilePhoto = prefs.getString('profile_photo_path');
+    });
   }
 
   Future<void> _updateProfile(String? fullname, String? bio, File? photo) async {

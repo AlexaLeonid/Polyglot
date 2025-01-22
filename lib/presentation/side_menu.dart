@@ -23,7 +23,18 @@ class _MyDrawerState extends State<MyDrawer> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _getUserData();
+  }
+
+  Future<void> _getUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Загружаем сохранённые данные
+    setState(() {
+      _username = prefs.getString('username');
+      _email = prefs.getString('email');
+      _profilePhoto = prefs.getString('profile_photo_path');
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -54,6 +65,8 @@ class _MyDrawerState extends State<MyDrawer> {
           // Обновляем данные профиля
           await prefs.setString('username', data['username']);
           await prefs.setString('email', data['email']);
+          await prefs.setString('fullname', data['fullname']);
+          await prefs.setString('bio', data['bio']);
           setState(() {
             _username = data['username'];
             _email = data['email'];

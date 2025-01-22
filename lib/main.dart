@@ -62,6 +62,12 @@ Future<void> _loadProfile() async {
       }
     } else {
       debugPrint('Ошибка загрузки профиля: ${response.body}');
+      await prefs.remove('username');
+      await prefs.remove('email');
+      await prefs.remove('access_token');
+      await prefs.remove('bio');
+      await prefs.remove('fullname');
+      await prefs.remove('profile_photo_path');
     }
   } catch (e) {
     debugPrint('Ошибка при загрузке профиля: $e');

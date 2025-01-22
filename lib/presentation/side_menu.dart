@@ -60,7 +60,8 @@ class _MyDrawerState extends State<MyDrawer> {
         );
 
         if (response.statusCode == 200) {
-          final data = json.decode(response.body);
+          final decodedBody = utf8.decode(response.bodyBytes);
+          final data = json.decode(decodedBody);
 
           // Обновляем данные профиля
           await prefs.setString('username', data['username']);
@@ -145,6 +146,8 @@ class _MyDrawerState extends State<MyDrawer> {
     // Сбрасываем данные профиля
     await prefs.remove('username');
     await prefs.remove('email');
+    await prefs.remove('fullname');
+    await prefs.remove('bio');
     await prefs.remove('profile_photo_path');
 
     // Обновляем состояние приложения

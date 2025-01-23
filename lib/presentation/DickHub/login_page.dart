@@ -68,6 +68,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
         title: Text('Вход'),
         backgroundColor: Color(0xFF438589),

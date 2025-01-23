@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Для хран�
 import 'package:http/http.dart' as http; // Для API-запросов
 import 'dart:convert'; // Для декодирования JSON
 import '../presentation/DickHub/login_page.dart'; // Страница для входа
-import '../presentation/DickHub/profile_page.dart';
+import '../presentation/DickHub/my_profile_page.dart';
 import 'DickHub/register_page.dart'; // Страница профиля (создадим позже)
 import 'dart:io'; // Для работы с файлами
 import 'package:path_provider/path_provider.dart'; // Для определения локального пути

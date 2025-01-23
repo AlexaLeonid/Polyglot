@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:Polyglot/presentation/DickHub/user_profile_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -13,6 +14,7 @@ class Dictionary {
   final String description;
   final String langChain;
   final double rating;
+  final String owner;
 
   Dictionary({
     required this.name,
@@ -20,6 +22,7 @@ class Dictionary {
     required this.description,
     required this.langChain,
     required this.rating,
+    required this.owner,
   });
 
   factory Dictionary.fromJson(Map<String, dynamic> json) {
@@ -29,6 +32,7 @@ class Dictionary {
       description: json['description'],
       langChain: json['lang_chain'],
       rating: (json['rating'] as num).toDouble(),
+      owner: json['owner']
     );
   }
 }
@@ -135,10 +139,6 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
         }
       }
     }
-
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(content: Text('Импорт завершен!')),
-    // );
   }
 
   Future<int?> _getLanguageIdByCode(String code) async {
@@ -177,7 +177,6 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                 style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
           ],
         ),
-
       ),
       body: FutureBuilder<List<Dictionary>>(
         future: _dictionaries,
@@ -196,7 +195,7 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                 return Card(
                   shape: RoundedRectangleBorder(
                     side: BorderSide(
-                      color: Color(0xFF438589), //<-- SEE HERE
+                      color: Color(0xFF438589),
                     ),
                     borderRadius: BorderRadius.circular(20.0),
                   ),
@@ -213,6 +212,18 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                         SizedBox(height: 4),
                         Text(dictionary.description,
                             maxLines: 1, overflow: TextOverflow.ellipsis),
+                        SizedBox(height: 4),
+                        GestureDetector(
+                          onTap: () => openOwnerInfoPage(dictionary.owner),
+                          child: Text(
+                            "Автор: ${dictionary.owner}",
+                            style: TextStyle(
+                              color: Color(0xFF438589), // Цвет текста владельца
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline, // Подчёркивание
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     trailing: Column(
@@ -233,7 +244,6 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
                       ],
                     ),
                     onTap: () => downloadAndImportDictionary(dictionary.id),
-                    // leading: Icon(Icons.cloud_download, color: Colors.grey),
                   ),
                 );
               },
@@ -242,6 +252,16 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
         },
       ),
       bottomNavigationBar: CustomBottomAppBar(parentContext: context),
+    );
+  }
+
+  void openOwnerInfoPage(String ownerName) {
+    // Переход на страницу с информацией о владельце
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OwnerInfoPage(ownerName: ownerName),
+      ),
     );
   }
 }

@@ -99,7 +99,10 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
-        title: Text('Регистрация'),
+        leading: BackButton(
+            color: Color(0xFFFDFBE8)
+        ),
+        title: Text('Регистрация', style: TextStyle(color: Color(0xFFFDFBE8),)),
         backgroundColor: Color(0xFF438589),
       ),
       body: Padding(
@@ -109,7 +112,7 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(labelText: 'Имя'),
             ),
             TextField(
               controller: _emailController,
@@ -128,7 +131,7 @@ class _RegisterPageState extends State<RegisterPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF438589),
               ),
-              child: Text('Зарегистрироваться'),
+              child: Text('Зарегистрироваться', style: TextStyle(color: Color(0xFFFDFBE8),)),
             ),
           ],
         ),

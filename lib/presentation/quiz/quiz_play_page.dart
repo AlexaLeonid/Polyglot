@@ -132,6 +132,9 @@ class _QuizPlayPageState extends State<QuizPlayPage> {
       backgroundColor: Color(0xFFFDFBE8), // Мягкий бежевый фон
       appBar: AppBar(
         backgroundColor: Color(0xFF438589), // Цвет заголовка
+        leading: BackButton(
+            color: Color(0xFFFDFBE8)
+        ),
         title: Text('Тренировка',
             style: TextStyle(color: Color(0xFFFDFBE8), fontSize: 22, fontWeight: FontWeight.bold)),
         centerTitle: true,

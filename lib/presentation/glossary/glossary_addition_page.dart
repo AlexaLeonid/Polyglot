@@ -147,8 +147,11 @@ class _AddDictionaryPageState extends State<AddDictionaryPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8),
       appBar: AppBar(
+        leading: BackButton(
+            color: Color(0xFFFDFBE8)
+        ),
         backgroundColor: Color(0xFF438589),
-        title: Text("Добавление словаря"),
+        title: Text("Добавление словаря", style: TextStyle(color: Color(0xFFFDFBE8))),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

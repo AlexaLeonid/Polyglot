@@ -166,9 +166,9 @@ class _DictionaryHubPageState extends State<DictionaryHubPage> {
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(
-                  Icons.person_outline, // Иконка пользователя
+                  Icons.menu, // Иконка пользователя
                   color: Color(0xFFFDFBE8),
-                  size: 30,
+                  size: 25,
                 ),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),

@@ -39,9 +39,9 @@ class _QuizPageState extends State<QuizPage> {
               Builder(
                 builder: (context) => IconButton(
                   icon: Icon(
-                    Icons.person_outline, // Иконка пользователя
+                    Icons.menu, // Иконка пользователя
                     color: Color(0xFFFDFBE8),
-                    size: 28,
+                    size: 25,
                     ),
                 onPressed: () => Scaffold.of(context).openDrawer(),
                 ),

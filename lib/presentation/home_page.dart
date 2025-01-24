@@ -135,9 +135,9 @@ class _HomePageState extends State<HomePage> {
             Builder(
               builder: (context) => IconButton(
                 icon: Icon(
-                  Icons.accessible, // TODO Поменять на три горизонтальные полосы
+                  Icons.menu,
                   color: Color(0xFFFDFBE8),
-                  size: 30,
+                  size: 25,
                 ),
                 onPressed: () => Scaffold.of(context).openDrawer(),
               ),
@@ -238,16 +238,25 @@ class _HomePageState extends State<HomePage> {
                                   context: context,
                                   builder: (context) {
                                     return AlertDialog(
+                                      backgroundColor: Color(0xFFFDFBE8),
                                       title: Text('Сделать словарь приватным?'),
                                       content: Text('Приватные словари будут видны только вам.'),
                                       actions: [
                                         TextButton(
                                           onPressed: () => Navigator.pop(context, false), // Не приватный
-                                          child: Text('Нет'),
+                                          child: Icon(
+                                            Icons.close,
+                                            color: Color(0xFF438589),
+                                            size: 30,
+                                            ),
                                         ),
                                         TextButton(
                                           onPressed: () => Navigator.pop(context, true), // Приватный
-                                          child: Text('Да'),
+                                          child: Icon(
+                                            Icons.done,
+                                            color: Color(0xFF438589),
+                                            size: 30,
+                                          ),
                                         ),
                                       ],
                                     );

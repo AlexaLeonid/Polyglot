@@ -70,7 +70,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Color(0xFFFDFBE8), // Светлый бежевый цвет
       appBar: AppBar(
-        title: Text('Вход'),
+        leading: BackButton(
+            color: Color(0xFFFDFBE8)
+        ),
+        title: Text('Вход', style: TextStyle(color: Color(0xFFFDFBE8),)),
         backgroundColor: Color(0xFF438589),
       ),
       body: Padding(
@@ -80,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
           children: [
             TextField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: InputDecoration(labelText: 'Имя'),
             ),
             TextField(
               controller: _passwordController,
@@ -95,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF438589),
               ),
-              child: Text('Войти'),
+              child: Text('Войти', style: TextStyle(color: Color(0xFFFDFBE8),)),
             ),
           ],
         ),

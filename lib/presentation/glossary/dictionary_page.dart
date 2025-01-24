@@ -272,7 +272,10 @@ class _DictionaryPageState extends State<DictionaryPage> {
       backgroundColor: const Color(0xFFFDFBE8),
       appBar: AppBar(
         backgroundColor: const Color(0xFF438589),
-        title: const Text('Словарь'),
+        leading: BackButton(
+            color: Color(0xFFFDFBE8)
+        ),
+        title: const Text('Словарь', style: TextStyle(color: Color(0xFFFDFBE8),)),
       ),
       body: Column(
         children: [

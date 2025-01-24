@@ -162,13 +162,14 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
+          backgroundColor: Color(0xFFFDFBE8),
           title: const Text('Редактировать профиль'),
           content: SingleChildScrollView(
             child: Column(
               children: [
                 TextField(
                   controller: fullnameController,
-                  decoration: const InputDecoration(labelText: 'Полное имя'),
+                  decoration: const InputDecoration(labelText: 'Имя'),
                 ),
                 TextField(
                   controller: bioController,
@@ -186,8 +187,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       });
                     }
                   },
-                  icon: const Icon(Icons.photo),
-                  label: const Text('Загрузить фото'),
+                  icon: const Icon(
+                    Icons.photo,
+                    color: Color(0xFF438589),),
+                  label: const Text('Загрузить фото', style: TextStyle(color: Color(0xFFFDFBE8),)),
                 ),
                 if (selectedPhoto != null) Text('Фото выбрано: ${selectedPhoto!.path}'),
               ],
@@ -198,7 +201,10 @@ class _ProfilePageState extends State<ProfilePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('Отмена'),
+              child: Icon(
+                Icons.close,
+                color: Color(0xFF438589),
+                size: 30,),
             ),
             ElevatedButton(
               onPressed: () {
@@ -209,7 +215,11 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
                 Navigator.of(context).pop();
               },
-              child: const Text('Сохранить'),
+              child: Icon(
+                Icons.done,
+                color: Color(0xFF438589),
+                size: 30,
+              ),
             ),
           ],
         );

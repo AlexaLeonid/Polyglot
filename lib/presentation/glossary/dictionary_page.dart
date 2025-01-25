@@ -162,8 +162,16 @@ class _DictionaryPageState extends State<DictionaryPage> {
   }
 
   Future<void> _showEditWordForm(int wordId) async {
+
+    // Запрос для получения id и названий языков в текущем словаре
     final dbPath = await getDatabasesPath();
     final db = await openDatabase('$dbPath/dictionary.db');
+    final languageRows = await db.rawQuery('''
+    SELECT l.id, l.name
+    FROM languages l
+    INNER JOIN dictionary_languages dl ON l.id = dl.language_id
+    WHERE dl.dictionary_id = ?
+  ''', [widget.dictionaryId]);
 
     // Получаем текущие переводы слова
     final translationRows = await db.rawQuery('''
@@ -175,9 +183,24 @@ class _DictionaryPageState extends State<DictionaryPage> {
 
     // Создаем контроллеры для текстовых полей
     final translationControllers = {
-      for (var row in translationRows)
-        row['language_id'] as int: TextEditingController(text: row['translated_word'] as String),
+        for (var row in languageRows) row['id'] as int: TextEditingController(),
     };
+
+    for (var row in translationRows) {
+      if (translationControllers.containsKey(row['language_id'] as int)) {
+        translationControllers[row['language_id'] as int]!.text = row['translated_word'] as String;
+      }
+    }
+
+    final possibleNewWords = [];
+    for (var entry in translationControllers.entries) {
+      final languageId = entry.key; // ID языка
+      final translatedWord = entry.value.text; // Перевод на языке
+
+      if (translatedWord.isEmpty) {
+        possibleNewWords.add(languageId);
+      }
+    }
 
     await showDialog(
       context: context,
@@ -189,8 +212,8 @@ class _DictionaryPageState extends State<DictionaryPage> {
             child: Column(
               children: translationControllers.entries.map((entry) {
                 final languageId = entry.key;
-                final languageName = translationRows
-                    .firstWhere((row) => row['language_id'] == languageId)['language_name'] as String;
+                final languageName = languageRows
+                    .firstWhere((row) => row['id'] == languageId)['name'] as String;
 
                 return TextField(
                   controller: entry.value,
@@ -217,12 +240,20 @@ class _DictionaryPageState extends State<DictionaryPage> {
                   final languageId = entry.key;
                   final translatedWord = entry.value.text.trim();
 
-                  await db.update(
-                    'translations',
-                    {'translated_word': translatedWord},
-                    where: 'word_id = ? AND language_id = ?',
-                    whereArgs: [wordId, languageId],
-                  );
+                  if (possibleNewWords.contains(languageId) & translatedWord.isNotEmpty){
+                    await db.insert('translations', {
+                      'word_id': wordId,
+                      'language_id': languageId,
+                      'translated_word': translatedWord,
+                    });
+                  }else {
+                    await db.update(
+                      'translations',
+                      {'translated_word': translatedWord},
+                      where: 'word_id = ? AND language_id = ?',
+                      whereArgs: [wordId, languageId],
+                    );
+                  }
                 }
 
                 Navigator.of(context).pop();

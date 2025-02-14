@@ -20,7 +20,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
     _loadData();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadData([String? searched_word]) async {
     final dbPath = await getDatabasesPath();
     final db = await openDatabase('$dbPath/dictionary.db');
 
@@ -33,15 +33,36 @@ class _DictionaryPageState extends State<DictionaryPage> {
   ''', [widget.dictionaryId]);
 
     languages = languageRows.map((row) => row['name'] as String).toList();
+    final wordRows;
+    if (searched_word == null || searched_word == ''){
+      // Извлекаем слова и их переводы
+      wordRows = await db.rawQuery('''
+      SELECT t.word_id, t.translated_word, l.name AS language_name
+      FROM translations t
+      INNER JOIN languages l ON t.language_id = l.id
+      INNER JOIN words w ON t.word_id = w.id
+      WHERE w.dictionary_id = ?
+    ''', [widget.dictionaryId]);
+    }else{
 
-    // Извлекаем слова и их переводы
-    final wordRows = await db.rawQuery('''
-    SELECT t.word_id, t.translated_word, l.name AS language_name
-    FROM translations t
-    INNER JOIN languages l ON t.language_id = l.id
-    INNER JOIN words w ON t.word_id = w.id
-    WHERE w.dictionary_id = ?
-  ''', [widget.dictionaryId]);
+    //   final searched_word_id = await db.rawQuery('''
+    //   SELECT t.word_id
+    //   FROM translations t
+    //   WHERE t.translated_word like concat('%', ?, '%')
+    // ''', [searched_word]);
+
+      // Извлекаем слова и их переводы
+      wordRows = await db.rawQuery('''
+      SELECT t.word_id, t.translated_word, l.name AS language_name
+      FROM translations t
+      INNER JOIN languages l ON t.language_id = l.id
+      INNER JOIN words w ON t.word_id = w.id
+      WHERE w.dictionary_id = ? 
+        and t.word_id in (SELECT t.word_id
+                          FROM translations t
+                          WHERE t.translated_word like concat('%', ?, '%'))
+    ''', [widget.dictionaryId, searched_word]);
+    }
 
     words = _groupWordsByLanguages(wordRows);
 
@@ -323,6 +344,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
               ),
               onChanged: (value) {
                 // Логика поиска
+                _loadData(value);
               },
             ),
           ),

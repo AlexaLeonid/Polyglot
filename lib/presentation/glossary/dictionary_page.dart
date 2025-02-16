@@ -45,22 +45,16 @@ class _DictionaryPageState extends State<DictionaryPage> {
     ''', [widget.dictionaryId]);
     }else{
 
-    //   final searched_word_id = await db.rawQuery('''
-    //   SELECT t.word_id
-    //   FROM translations t
-    //   WHERE t.translated_word like concat('%', ?, '%')
-    // ''', [searched_word]);
-
       // Извлекаем слова и их переводы
       wordRows = await db.rawQuery('''
       SELECT t.word_id, t.translated_word, l.name AS language_name
       FROM translations t
       INNER JOIN languages l ON t.language_id = l.id
-      INNER JOIN words w ON t.word_id = w.id
+      INNER JOIN words w ON t.word_id = w.id 
       WHERE w.dictionary_id = ? 
         and t.word_id in (SELECT t.word_id
                           FROM translations t
-                          WHERE t.translated_word like concat('%', ?, '%'))
+                          WHERE t.translated_word like '%'|| ? ||'%')
     ''', [widget.dictionaryId, searched_word]);
     }
 

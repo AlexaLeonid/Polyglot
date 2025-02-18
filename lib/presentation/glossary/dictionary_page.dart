@@ -12,7 +12,9 @@ class DictionaryPage extends StatefulWidget {
 
 class _DictionaryPageState extends State<DictionaryPage> {
   List<String> languages = []; // Языки в словаре
-  List<List<String>> words = []; // Слова в словаре
+  List<Map<String, dynamic>> allWords = []; // Все слова и их переводы
+  List<List<String>> filteredWords = []; // Отфильтрованные слова
+
 
   @override
   void initState() {
@@ -30,26 +32,27 @@ class _DictionaryPageState extends State<DictionaryPage> {
     FROM languages l
     INNER JOIN dictionary_languages dl ON l.id = dl.language_id
     WHERE dl.dictionary_id = ?
-  ''', [widget.dictionaryId]);
+    ''', [widget.dictionaryId]);
 
     languages = languageRows.map((row) => row['name'] as String).toList();
 
-    // Извлекаем слова и их переводы
-    final wordRows = await db.rawQuery('''
-    SELECT t.word_id, t.translated_word, l.name AS language_name
-    FROM translations t
-    INNER JOIN languages l ON t.language_id = l.id
-    INNER JOIN words w ON t.word_id = w.id
-    WHERE w.dictionary_id = ?
-  ''', [widget.dictionaryId]);
+      // Извлекаем слова и их переводы
+      final wordRows = await db.rawQuery('''
+      SELECT t.word_id, t.translated_word, l.name AS language_name
+      FROM translations t
+      INNER JOIN languages l ON t.language_id = l.id
+      INNER JOIN words w ON t.word_id = w.id
+      WHERE w.dictionary_id = ?
+    ''', [widget.dictionaryId]);
 
-    words = _groupWordsByLanguages(wordRows);
+    allWords = wordRows;
+    filteredWords = _groupWordsByLanguages(allWords);
 
     setState(() {});
   }
 
   // Группировка слов по языкам
-  List<List<String>> _groupWordsByLanguages(List<Map<String, Object?>> wordRows) {
+  List<List<String>> _groupWordsByLanguages(List<Map<String, dynamic>> wordRows) {
     final Map<int, Map<String, String>> groupedWords = {};
 
     for (var row in wordRows) {
@@ -75,6 +78,34 @@ class _DictionaryPageState extends State<DictionaryPage> {
     }).toList();
   }
 
+  // Фильтрация слов на основе поискового запроса
+  void _filterWords(String query) {
+    if (query.isEmpty) {
+      // Если запрос пустой, показываем все слова
+      filteredWords = _groupWordsByLanguages(allWords);
+    } else {
+      // Фильтруем слова, которые содержат искомую подстроку
+
+      final matchingWordIds = allWords
+          .where((row) {
+        final translatedWord = row['translated_word'] as String;
+        return translatedWord.toLowerCase().contains(query.toLowerCase());
+      })
+          .map((row) => row['word_id'] as int) // Извлекаем word_id
+          .toSet(); // Убираем дубликаты
+
+      // Фильтруем данные, оставляя только те, у которых word_id есть в matchingWordIds
+      final filteredData = allWords.where((row) {
+        final wordId = row['word_id'] as int;
+        return matchingWordIds.contains(wordId);
+      }).toList();
+
+      filteredWords = _groupWordsByLanguages(filteredData);
+    }
+
+    setState(() {});
+  }
+
   Future<void> _showAddWordForm() async {
     // Запрос для получения id и названий языков в текущем словаре
     final dbPath = await getDatabasesPath();
@@ -84,7 +115,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
     FROM languages l
     INNER JOIN dictionary_languages dl ON l.id = dl.language_id
     WHERE dl.dictionary_id = ?
-  ''', [widget.dictionaryId]);
+    ''', [widget.dictionaryId]);
 
     // Формируем Map<id, TextEditingController> для всех языков словаря
     final translationControllers = {
@@ -323,6 +354,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
               ),
               onChanged: (value) {
                 // Логика поиска
+                _filterWords(value);
               },
             ),
           ),
@@ -349,7 +381,7 @@ class _DictionaryPageState extends State<DictionaryPage> {
                         columns: languages
                             .map((lang) => DataColumn(label: Text(lang)))
                             .toList(),
-                        rows: words.map(
+                        rows: filteredWords.map(
                               (wordRow) {
                             final wordId = int.parse(wordRow[0]); // ID слова
                             return DataRow(
